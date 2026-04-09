@@ -24,6 +24,11 @@ const RestaurantSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a close time'],
         match: [/^([01]\d|2[0-3]):([0-5]\d)$/, 'Please use HH:mm format']
+    },
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true
     }
 },{
     timestamps: true,
