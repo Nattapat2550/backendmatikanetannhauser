@@ -15,6 +15,7 @@ const connectDB = require('./config/db');
 const restaurants = require('./routes/restaurants');
 const auth = require('./routes/auth');
 const reservations = require('./routes/reservations');
+const comments = require('./routes/comments');
 
 dotenv.config({path: './config/config.env'});
 connectDB();
@@ -40,6 +41,7 @@ app.set('query parser','extended');
 app.use('/api/v1/restaurants', restaurants);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/reservations', reservations);
+app.use('/api/v1/comments', comments);
 
 // const swaggerJsDoc = require('swagger-jsdoc');
 // const swaggerUI = require('swagger-ui-express');

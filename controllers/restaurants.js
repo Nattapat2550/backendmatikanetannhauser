@@ -1,5 +1,6 @@
 const Restaurant = require('../models/Restaurant');
 const Reservation = require('../models/Reservation.js');
+const Comment = require('../models/Comment.js');
 const mongoose = require('mongoose');
 
 //Get all Restaurants 
@@ -16,7 +17,7 @@ exports.getRestaurants = async (req,res,next)=>{
     let queryStr = JSON.stringify(reqQuery);
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match=>`$${match}`);
 
-    query = Restaurant.find(JSON.parse(queryStr)).populate('reservations');
+    query = Restaurant.find(JSON.parse(queryStr)).populate('reservations').populate('comments');
 
     if(req.query.select) 
     {
@@ -168,7 +169,7 @@ exports.deleteRestaurant = async (req,res,next)=>{
         {
             return res.status(404).json({success:false, message:`Restaurant not found with id of ${req.params.id}`});
         }
-        
+
         if(restaurant.user.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({
                 success: false, 
