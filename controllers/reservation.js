@@ -10,12 +10,12 @@ exports.getReservations = async (req, res, next) => {
             console.log(req.params.restaurantId);
             query = Reservation.find({user: req.user.id, restaurant: req.params.restaurantId}).populate({
                 path: 'restaurant',
-                select: 'name address tel'
+                select: 'name address telephone'
             })
         } else {
             query = Reservation.find({user: req.user.id}).populate({
                 path: 'restaurant',
-                select: 'name address tel'
+                select: 'name address telephone'
             })
         }
     } else {
@@ -23,12 +23,12 @@ exports.getReservations = async (req, res, next) => {
             console.log(req.params.restaurantId);
             query = Reservation.find({restaurant: req.params.restaurantId}).populate({
                 path: 'restaurant',
-                select: 'name address tel'
+                select: 'name address telephone'
             });
         } else {
             query = Reservation.find({}).populate({
                 path: 'restaurant',
-                select: 'name address tel'
+                select: 'name address telephone'
             });
         }
     }
@@ -54,7 +54,7 @@ exports.getReservation = async (req, res, next) => {
     try {
         const reservation = await Reservation.findById(req.params.id).populate({
             path: 'restaurant',
-            select: 'name address tel'
+            select: 'name address telephone'
         });
         if(!reservation) {
             res.status(404).json({

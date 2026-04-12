@@ -11,7 +11,7 @@ const RestaurantSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add an address']
     },
-    tel:{
+    telephone:{
         type: String,
         match: [/^[0-9\-+]{9,15}$/, 'Please add a valid phone number']
     },
