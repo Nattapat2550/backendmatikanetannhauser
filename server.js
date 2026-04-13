@@ -29,12 +29,12 @@ app.use(helmet());
 app.use(xss());
 
 // Rate Limit
-const limiter = rateLimit({
+/*const limiter = rateLimit({
     windowMs: 10*60*1000,
     max: 100,
 });
 
-app.use(limiter);
+app.use(limiter);*/
 
 app.set('query parser','extended');
 
