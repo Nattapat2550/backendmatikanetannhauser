@@ -140,7 +140,7 @@ exports.updateRestaurant= async (req, res,next)=> {
 
         // ตรวจสอบว่าผู้ใช้งานเป็นเจ้าของร้านนี้ หรือเป็น admin หรือไม่
         if(restaurant.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({
+            return res.status(403).json({
                 success: false, 
                 message: `User ${req.user.id} is not authorized to update this restaurant`
             });
