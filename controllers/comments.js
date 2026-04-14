@@ -39,7 +39,7 @@ exports.getComments = async (req, res, next) => {
         });
     } catch (err) {
         console.log(err.stack);
-        res.status(400).json({ success: false, message: 'Cannot get comments' });
+        res.status(500).json({ success: false, message: 'Cannot get comments' });
     }
 };
 
@@ -58,7 +58,7 @@ exports.getComment = async (req, res, next) => {
 
         res.status(200).json({ success: true, data: comment });
     } catch (err) {
-        res.status(400).json({ success: false, message: 'Cannot find comment' });
+        res.status(500).json({ success: false, message: 'Cannot find comment' });
     }
 };
 
@@ -88,8 +88,12 @@ exports.addComment = async (req, res, next) => {
 
         res.status(201).json({ success: true, data: comment });
     } catch (err) {
+        if (err.name === 'ValidationError') {
+            const messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({ success: false, message: messages });
+        }
         console.log(err.stack);
-        res.status(400).json({ success: false, message: 'Cannot create comment' });
+        res.status(500).json({ success: false, message: 'Cannot create comment' });
     }
 };
 
@@ -118,8 +122,12 @@ exports.updateComment = async (req, res, next) => {
 
         res.status(200).json({ success: true, data: comment });
     } catch (err) {
+        if (err.name === 'ValidationError') {
+            const messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({ success: false, message: messages });
+        }
         console.log(err.stack);
-        res.status(400).json({ success: false, message: 'Cannot update comment' });
+        res.status(500).json({ success: false, message: 'Cannot update comment' });
     }
 };
 
@@ -146,6 +154,6 @@ exports.deleteComment = async (req, res, next) => {
         });
     } catch (err) {
         console.log(err.stack);
-        res.status(400).json({ success: false, message: 'Cannot delete comment' });
+        res.status(500).json({ success: false, message: 'Cannot delete comment' });
     }
 };
