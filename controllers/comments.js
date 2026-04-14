@@ -73,7 +73,17 @@ exports.addComment = async (req, res, next) => {
         if (!restaurant) {
             return res.status(404).json({ success: false, message: `No restaurant with id ${req.params.restaurantId}` });
         }
+        const existingComment = await Comment.findOne({
+            restaurant: req.params.restaurantId,
+            user: req.user.id
+        });
 
+        if (existingComment) {
+            return res.status(400).json({
+                success: false,
+                message: "You have already reviewed this restaurant"
+            });
+        }
         const comment = await Comment.create(req.body);
 
         res.status(201).json({ success: true, data: comment });
