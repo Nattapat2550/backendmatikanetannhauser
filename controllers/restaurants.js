@@ -107,6 +107,14 @@ exports.createRestaurant = async(req,res,next)=>{
             success: true,
             data: restaurant
         });
+        
+        const existingRestaurant = await Restaurant.findOne({ telephone: req.body.telephone });
+        if(existingRestaurant){
+            return res.status(400).json({
+                success: false,
+                message: "This telephone number is already existed",
+            });
+        }
     } catch(err) {
         if (err.name === 'ValidationError') { //lost info
             const errors = Object.values(err.errors).map(e => e.message);
