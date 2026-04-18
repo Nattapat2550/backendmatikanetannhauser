@@ -29,6 +29,7 @@ app.use(cors({
 }));
 app.options(/.*/, cors());
 
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize());
@@ -44,7 +45,10 @@ app.use(xss());
 app.use(limiter);*/
 
 app.set('query parser','extended');
-
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/', (req, res) => {
+    res.status(200).json({ success: true, message: "Welcome to VacQ Backend API" });
+});
 app.use('/api/v1/restaurants', restaurants);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/reservations', reservations);
