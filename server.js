@@ -27,7 +27,7 @@ app.use(cors({
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true,
 }));
-app.options('*', cors());
+app.options(/.*/, cors());
 
 app.use(express.json());
 app.use(cookieParser());
@@ -45,6 +45,12 @@ app.use(limiter);*/
 
 app.set('query parser','extended');
 
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+// เพิ่มหน้า Home page ชั่วคราวเพื่อเวลาเปิดผ่าน Browser จะได้ไม่ Error
+app.get('/', (req, res) => {
+    res.status(200).json({ success: true, message: "Welcome to VacQ Backend API" });
+});
 app.use('/api/v1/restaurants', restaurants);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/reservations', reservations);
