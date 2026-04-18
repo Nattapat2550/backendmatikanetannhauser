@@ -34,7 +34,6 @@ app.use(cookieParser());
 app.use(mongoSanitize());
 app.use(helmet());
 app.use(xss());
-
 // Rate Limit
 /*const limiter = rateLimit({
     windowMs: 10*60*1000,
