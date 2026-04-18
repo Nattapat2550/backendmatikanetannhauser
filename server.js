@@ -7,8 +7,9 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const mongoSanitize = require('@exortek/express-mongo-sanitize');
 const helmet = require('helmet');
-const {xss} = require('express-xss-sanitizer');
+const { xss } = require('express-xss-sanitizer');
 const rateLimit = require('express-rate-limit');
+const cors = require('cors');
 
 const connectDB = require('./config/db');
 
@@ -17,10 +18,16 @@ const auth = require('./routes/auth');
 const reservations = require('./routes/reservations');
 const comments = require('./routes/comments');
 
-dotenv.config({path: './config/config.env'});
+dotenv.config({ path: './config/config.env' });
 connectDB();
 
 const app = express();
+
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    credentials: true,
+}));
+app.options('*', cors());
 
 app.use(express.json());
 app.use(cookieParser());
