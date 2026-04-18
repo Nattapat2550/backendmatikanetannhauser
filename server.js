@@ -40,7 +40,6 @@ app.use(xss());
     max: 100,
 });
 app.use(limiter);*/
-
 app.set('query parser','extended');
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
