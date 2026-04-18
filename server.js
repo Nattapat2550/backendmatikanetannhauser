@@ -41,7 +41,6 @@ app.use(xss());
 });
 app.use(limiter);*/
 app.set('query parser','extended');
-
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // เพิ่มหน้า Home page ชั่วคราวเพื่อเวลาเปิดผ่าน Browser จะได้ไม่ Error
