@@ -5,7 +5,7 @@ setServers(["1.1.1.1", "8.8.8.8"]);
 const express = require('express');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
-const mongoSanitize = require('@exortek/express-mongo-sanitize');
+// const mongoSanitize = require('@exortek/express-mongo-sanitize');
 const helmet = require('helmet');
 // const { xss } = require('express-xss-sanitizer');
 const rateLimit = require('express-rate-limit');
