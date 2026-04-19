@@ -17,7 +17,7 @@ exports.getRestaurants = async (req,res,next)=>{
     let queryStr = JSON.stringify(reqQuery);
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match=>`$${match}`);
 
-    query = Restaurant.find(JSON.parse(queryStr)).populate('reservations').populate('comments');
+    query = Restaurant.find(JSON.parse(queryStr)).populate('reservations').populate('comments').populate('owner');
 
     if(req.query.select) 
     {
@@ -83,7 +83,7 @@ exports.getRestaurant= async (req,res,next)=>{
             return res.status(400).json({success:false, message:'Invalid restaurant ID'});
         }
 
-        let query = Restaurant.findById(req.params.id);
+        let query = Restaurant.findById(req.params.id).populate('owner');
 
         const restaurant = await query;
 

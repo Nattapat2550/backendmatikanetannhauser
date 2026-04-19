@@ -45,7 +45,7 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // เพิ่มหน้า Home page ชั่วคราวเพื่อเวลาเปิดผ่าน Browser จะได้ไม่ Error
 app.get('/', (req, res) => {
-    res.status(200).json({ success: true, message: "Welcome to VacQ Backend API" });
+    res.status(200).json({ success: true, message: "Welcome to Restaurant Reservation Backend API" });
 });
 app.use('/api/v1/restaurants', restaurants);
 app.use('/api/v1/auth', auth);
