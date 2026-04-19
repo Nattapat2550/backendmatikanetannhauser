@@ -1,6 +1,18 @@
 const Reservation = require('../models/Reservation');
 const Restaurant = require('../models/Restaurant');
 
+// Default populate options to keep response consistent
+const populateOptions = [
+    { 
+        path: 'restaurant', 
+        select: 'name address telephone openTime closeTime' 
+    },
+    { 
+        path: 'user', 
+        select: 'name email telephone' 
+    }
+];
+
 //get all reservations
 exports.getReservations = async (req, res, next) => {
     let query;
@@ -8,28 +20,16 @@ exports.getReservations = async (req, res, next) => {
     if(req.user.role !== 'admin') {
         if(req.params.restaurantId) { // only allow if it has restaurant id, get user's reservations
             console.log(req.params.restaurantId);
-            query = Reservation.find({user: req.user.id, restaurant: req.params.restaurantId}).populate({
-                path: 'restaurant',
-                select: 'name address telephone'
-            })
+            query = Reservation.find({user: req.user.id, restaurant: req.params.restaurantId}).populate(populateOptions);
         } else {
-            query = Reservation.find({user: req.user.id}).populate({
-                path: 'restaurant',
-                select: 'name address telephone'
-            })
+            query = Reservation.find({user: req.user.id}).populate(populateOptions);
         }
     } else {
         if(req.params.restaurantId) {
             console.log(req.params.restaurantId);
-            query = Reservation.find({restaurant: req.params.restaurantId}).populate({
-                path: 'restaurant',
-                select: 'name address telephone'
-            });
+            query = Reservation.find({restaurant: req.params.restaurantId}).populate(populateOptions);
         } else {
-            query = Reservation.find({}).populate({
-                path: 'restaurant',
-                select: 'name address telephone'
-            });
+            query = Reservation.find({}).populate(populateOptions);
         }
     }
 
@@ -52,17 +52,18 @@ exports.getReservations = async (req, res, next) => {
 
 exports.getReservation = async (req, res, next) => {
     try {
-        const reservation = await Reservation.findById(req.params.id).populate({
-            path: 'restaurant',
-            select: 'name address telephone'
-        });
+        const reservation = await Reservation.findById(req.params.id).populate(populateOptions);
+
         if(!reservation) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: `No reservation with the id of ${req.params.id}`
             });
         }
-        if(reservation.user.toString()!==req.user.id && req.user.role !== 'admin') {
+        
+        // Ensure user is authorized to view
+        // Note: reservation.user is populated, so its _id must be accessed for comparison
+        if(reservation.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({
                 success: false, 
                 message: `User ${req.user.id} is not authorized to view this reservation`
@@ -75,7 +76,7 @@ exports.getReservation = async (req, res, next) => {
     } catch(err) {
         console.log(err.stack);
         return res.status(500).json({
-            success: true,
+            success: false,
             message: 'Cannot find Reservation'
         });
     }
@@ -146,6 +147,10 @@ exports.addReservation = async (req, res, next) => {
         
 
         const reservation = await Reservation.create(req.body);
+        
+        // Populate specific fields before returning the response
+        await reservation.populate(populateOptions);
+
         res.status(200).json({
             success: true,
             data: reservation
@@ -161,10 +166,8 @@ exports.addReservation = async (req, res, next) => {
 
 exports.updateReservation = async (req, res, next) => {
     try {
-        let reservation = await Reservation.findById(req.params.id).populate({
-            path: 'restaurant',
-            select: 'openTime closeTime'
-        })
+        let reservation = await Reservation.findById(req.params.id).populate(populateOptions);
+        
         if(!reservation) {
             return res.status(404).json({
                 success: false,
@@ -172,7 +175,7 @@ exports.updateReservation = async (req, res, next) => {
             });
         }
 
-        if(reservation.user.toString()!==req.user.id && req.user.role !== 'admin') {
+        if(reservation.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({
                 success: false, 
                 message: `User ${req.user.id} is not authorized to update this reservation`
@@ -204,17 +207,16 @@ exports.updateReservation = async (req, res, next) => {
                 message: `This restaurantId doesn't exist ${req.body.restaurant}.`
             })
         }
-        console.log(reservation);
+        // console.log(reservation);
         const openTime = restaurant.openTime;
         const closeTime = restaurant.closeTime;
         const startDateTime = req.body.startDateTime || reservation.startDateTime.toISOString();
         let endDateTime = req.body.endDateTime || reservation.endDateTime.toISOString();
         const startTime = startDateTime.slice(11, 16);
         const endTime = endDateTime.slice(11, 16);
-        // console.log(typeof startTime, typeof endTime);
-        // console.log(startTime, endTime);
-        // console.log(req.body);
+        
         console.log(`Restarant time: ${openTime}-${closeTime}, your reserved ${startTime}-${endTime}`);
+        
         //Rule: must be same date
         const startDate = startDateTime.slice(0, 10);
         const endDate = endDateTime.slice(0, 10);
@@ -242,7 +244,7 @@ exports.updateReservation = async (req, res, next) => {
         reservation = await Reservation.findByIdAndUpdate(req.params.id, req.body, {
             new: true, 
             runValidators: true
-        });
+        }).populate(populateOptions);
 
         res.status(200).json({
             success: true, 
@@ -281,7 +283,7 @@ exports.deleteReservation = async (req, res, next) => {
     } catch(err) {
         console.log(err.stack);
         return res.status(500).json({
-            success: true,
+            success: false,
             message: 'Cannot delete Reservation'
         });
     }
