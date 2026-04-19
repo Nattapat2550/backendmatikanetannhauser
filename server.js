@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const mongoSanitize = require('@exortek/express-mongo-sanitize');
 const helmet = require('helmet');
-const { xss } = require('express-xss-sanitizer');
+// const { xss } = require('express-xss-sanitizer');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
@@ -33,7 +33,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize());
 app.use(helmet());
-app.use(xss());
+// app.use(xss());
 // Rate Limit
 /*const limiter = rateLimit({
     windowMs: 10*60*1000,
