@@ -11,6 +11,10 @@ const RestaurantSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add an address']
     },
+    imgsrc:{
+        type: String,
+        required: [true, 'Please add an imgsrc']
+    },
     telephone: {
         type: String,
         match: [/^(02\d{7}|0[689]\d{8})$/, 'Please add a valid phone number']
