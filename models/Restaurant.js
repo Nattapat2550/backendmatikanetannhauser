@@ -11,9 +11,9 @@ const RestaurantSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add an address']
     },
-    telephone:{
+    telephone: {
         type: String,
-        match: [/^[0-9\-+]{9,15}$/, 'Please add a valid phone number']
+        match: [/^(02\d{7}|0[689]\d{8})$/, 'Please add a valid phone number']
     },
     openTime: {
         type: String,
@@ -34,6 +34,13 @@ const RestaurantSchema = new mongoose.Schema({
     timestamps: true,
     toJSON: {virtuals:true},
     toObject:{virtuals:true}
+});
+
+RestaurantSchema.virtual('owner',{
+    ref:'User',
+    localField: 'user',
+    foreignField: '_id',
+    justOne: true
 });
 
 RestaurantSchema.virtual('reservations',{
