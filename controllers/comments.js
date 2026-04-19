@@ -107,12 +107,10 @@ exports.updateComment = async (req, res, next) => {
             return res.status(404).json({ success: false, message: `No comment with id ${req.params.id}` });
         }
 
-        
         if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
+            return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
         }
 
-        
         req.body.isEdited = true;
 
         comment = await Comment.findByIdAndUpdate(req.params.id, req.body, {
@@ -142,7 +140,7 @@ exports.deleteComment = async (req, res, next) => {
         }
 
         if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to delete this comment` });
+            return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to delete this comment` });
         }
 
         await comment.deleteOne();
