@@ -83,7 +83,7 @@ exports.getRestaurant= async (req,res,next)=>{
             return res.status(400).json({success:false, message:'Invalid restaurant ID'});
         }
 
-        let query = Restaurant.findById(req.params.id).populate('owner');
+        let query = Restaurant.findById(req.params.id).populate('comments').populate('owner');
 
         const restaurant = await query;
 
