@@ -52,29 +52,28 @@ app.use('/api/v1/auth', auth);
 app.use('/api/v1/reservations', reservations);
 app.use('/api/v1/comments', comments);
 
-// const swaggerJsDoc = require('swagger-jsdoc');
-// const swaggerUI = require('swagger-ui-express');
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUI = require('swagger-ui-express');
 
-// const swaggerOptions = {
-//     swaggerDefinition: {
-//         openapi: '3.0.0',
-//         info: {
-//             title: 'Library API',
-//             version: '1.0.0',
-//             description: 'A simple Express VacQ API',
-//         },
-//         servers: [
-//             {
-//                 url: 'http://localhost:5000/api/v1',
-//             }
-//         ],
-//     },
-//     apis:['./routes/*.js'],
-// };
+const swaggerOptions = {
+    swaggerDefinition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Library API',
+            version: '1.0.0',
+            description: 'A Restaurant Reservation API',
+        },
+        servers: [
+            {
+                url: 'http://localhost:5000/api/v1',
+            }
+        ],
+    },
+    apis:['./routes/*.js'],
+};
 
-// const swaggerDoc = swaggerJsDoc(swaggerOptions);
-
-// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+const swaggerDoc = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
 
 const PORT = process.env.PORT || 3000;
 
