@@ -163,3 +163,12 @@ module.exports = router;
  *              200:
  *                  description: Logged out successfully
  */
+/**
+ * @swagger
+ * components:
+ *  securitySchemes:
+ *      bearerAuth:
+ *          type: http
+ *          scheme: bearer
+ *          bearerFormat: JWT
+ */
