@@ -65,7 +65,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: 'http://localhost:3000/api/v1',
+                url: 'http://backendmatikanetannhauser.vercel.app/api/v1',
             }
         ],
     },
@@ -73,7 +73,18 @@ const swaggerOptions = {
 };
 
 const swaggerDoc = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+app.use('/api-docs',
+    swaggerUI.serve,
+    swaggerUI.setup(
+        swaggerDoc, {
+            customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css',
+            customJs: [
+                'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js',
+            ],
+        }
+    )
+);
 
 const PORT = process.env.PORT || 3000;
 
