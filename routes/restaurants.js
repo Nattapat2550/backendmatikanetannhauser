@@ -56,10 +56,10 @@ module.exports = router;
  *                  type: ObjectId
  *                  description: Restaurant Owner ID
  *          example:
- *              name: 69ea0d3a5cf6597df5661821
+ *              name: MyRestaurant1
  *              address: 1001 Banthat Thong Rd, Wang Mai, Pathum Wan, Bangkok 10330
  *              imgsrc: MyRestaurant1
- *              telephone: 0989999999
+ *              telephone: "0989999999"
  *              openTime: 09:00
  *              closeTime: 22:00
  *              owner: 69e6e63f3cfaebb185eb45f5
@@ -94,7 +94,7 @@ module.exports = router;
  *              required: true
  *              content:
  *                  application/json:
- *                      schemas:
+ *                      schema:
  *                          $ref: '#/components/schemas/Restaurants'
  *          responses:
  *              200:
