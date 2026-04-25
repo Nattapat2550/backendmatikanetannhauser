@@ -35,11 +35,9 @@ jobs:
       run: npm ci
 
     # รันเทสของคุณ
-    - name: Run tests
-      run: npm test
-      env:
-        # กำหนด Environment Variables ที่โปรเจกต์คุณต้องใช้ตอนรันเทส 
-        # (คุณสามารถเปลี่ยนชื่อตัวแปรให้ตรงกับในไฟล์ .env ของคุณได้เลย)
-        MONGO_URI: mongodb://localhost:27017/testdb
-        PORT: 5000
-        JWT_SECRET: testsecret12345
+    - name: Run Postman Tests
+      run: |
+        newman run __test__/BackendProjectTestcaseFirstSprint.postman_collection \
+        -e __test__/postman_env.json \
+        --env-var "url=https://backendmatikanetannhauser.vercel.app/api/v1" \
+        --env-var "jwt_secret=${{ secrets.JWT_SECRET }}"
