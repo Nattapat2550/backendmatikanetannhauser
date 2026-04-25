@@ -26,29 +26,18 @@ let WINDOW_MS_STRING = formatWindowDuration(WINDOW_MS);
 // @route   GET /api/v1/restaurants/:restaurantId/comments
 exports.getComments = async (req, res, next) => {
     try {
-        let query;
-        const reqQuery = { ...req.query };
+        const { select, sort, ...rest } = req.query;
 
-        const removeFields = ['select', 'sort', 'page', 'limit'];
-        removeFields.forEach(param => delete reqQuery[param]);
+        // Build query
+        let query = Comment.find(rest);
 
-        if (req.params.restaurantId) {
-            reqQuery.restaurant = req.params.restaurantId;
+        // Field selection
+        if (select) {
+            query = query.select(select.split(',').join(' '));
         }
 
-        
-        query = Comment.find(reqQuery).populate({
-            path: 'user',
-            select: 'name'
-        });
-
-        
-        if (req.query.sort) {
-            const sortBy = req.query.sort.split(',').join(' ');
-            query = query.sort(sortBy);
-        } else {
-            query = query.sort('-createdAt'); // Default เป็น Most Recent
-        }
+        // Sorting
+        query = query.sort(sort ? sort.split(',').join(' ') : '-createdAt');
 
         const comments = await query;
 

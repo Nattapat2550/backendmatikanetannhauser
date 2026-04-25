@@ -86,7 +86,7 @@ exports.getRestaurants = async (req,res,next)=>{
 };
 
 //Get sigle Restaurant
-exports.getRestaurant= async (req,res,next)=>{
+exports.getRestaurant = async (req,res,next)=>{
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) { //if restaurant is not valid na
             return res.status(400).json({success:false, message:'Invalid restaurant ID'});
