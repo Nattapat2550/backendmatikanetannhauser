@@ -38,6 +38,4 @@ jobs:
     - name: Run Postman Tests
       run: |
         newman run __test__/BackendProjectTestcaseFirstSprint.postman_collection \
-        -e __test__/postman_env.json \
-        --env-var "url=https://backendmatikanetannhauser.vercel.app/api/v1" \
-        --env-var "jwt_secret=${{ secrets.JWT_SECRET }}"
+        --env-var "url=https://backendmatikanetannhauser.vercel.app/api/v1"
