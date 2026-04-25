@@ -118,13 +118,14 @@ exports.getRestaurant= async (req,res,next)=>{
 //Create new Restaurant 
 exports.createRestaurant = async(req,res,next)=>{
     try {
-        const existingRestaurant = await Restaurant.findOne({ telephone: req.body.telephone });
-        if(existingRestaurant){
-            return res.status(400).json({
-                success: false,
-                message: "This telephone number is already existed",
-            });
-        }
+        
+        // const existingRestaurant = await Restaurant.findOne({ telephone: req.body.telephone });
+        // if(existingRestaurant){
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "This telephone number is already existed",
+        //     });
+        // }
 
         req.body.owner = req.user.id; // แก้จาก user เป็น owner
         req.body.user = req.user.id; // แก้จาก user เป็น owner
