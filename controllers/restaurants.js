@@ -17,7 +17,16 @@ exports.getRestaurants = async (req,res,next)=>{
     let queryStr = JSON.stringify(reqQuery);
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match=>`$${match}`);
 
-    query = Restaurant.find(JSON.parse(queryStr)).populate('reservations').populate('comments').populate('owner');
+    query = Restaurant.find(JSON.parse(queryStr))
+        .populate('reservations')
+        .populate('owner')
+        .populate({
+            path: 'comments',
+            populate: {
+                path: 'user',
+                select: 'name email'
+            }
+        });
 
     if(req.query.select) 
     {
@@ -83,7 +92,16 @@ exports.getRestaurant= async (req,res,next)=>{
             return res.status(400).json({success:false, message:'Invalid restaurant ID'});
         }
 
-        let query = Restaurant.findById(req.params.id).populate('owner');
+        let query = Restaurant.findById(req.params.id)
+            .populate('reservations')
+            .populate('owner')
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'user',
+                    select: 'name email'
+                }
+            });
 
         const restaurant = await query;
 
@@ -100,7 +118,7 @@ exports.getRestaurant= async (req,res,next)=>{
 //Create new Restaurant 
 exports.createRestaurant = async(req,res,next)=>{
     try {
-        req.body.user = req.user.id;
+        req.body.owner = req.user.id; // แก้จาก user เป็น owner
         const restaurant = await Restaurant.create(req.body);
         
         res.status (201).json({
@@ -146,8 +164,7 @@ exports.updateRestaurant= async (req, res,next)=> {
             return res.status (404).json({success:false});
         }
 
-        // ตรวจสอบว่าผู้ใช้งานเป็นเจ้าของร้านนี้ หรือเป็น admin หรือไม่
-        if(restaurant.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        if(restaurant.owner.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({
                 success: false, 
                 message: `User ${req.user.id} is not authorized to update this restaurant`
@@ -186,7 +203,7 @@ exports.deleteRestaurant = async (req,res,next)=>{
             return res.status(404).json({success:false, message:`Restaurant not found with id of ${req.params.id}`});
         }
 
-        if(restaurant.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        if(restaurant.owner.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({
                 success: false, 
                 message: `User ${req.user.id} is not authorized to delete this restaurant`

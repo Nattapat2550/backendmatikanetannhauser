@@ -1,6 +1,24 @@
 const Comment = require('../models/Comment');
 const Restaurant = require('../models/Restaurant');
 
+const COMMENT_LIMIT = 10;
+const WINDOW_MS = 60 * 1000; // 1 minute
+
+const formatWindowDuration = (ms) => {
+    const units = [
+        { label: 'day', value: Math.floor(ms / (1000 * 60 * 60 * 24)) },
+        { label: 'hour', value: Math.floor((ms / (1000 * 60 * 60)) % 24) },
+        { label: 'minute', value: Math.floor((ms / (1000 * 60)) % 60) },
+        { label: 'second', value: Math.floor((ms / 1000) % 60) }
+    ];
+    return units
+        .filter(u => u.value > 0)
+        .map(u => `${u.value} ${u.label}${u.value !== 1 ? 's' : ''}`)
+        .join(' ');
+};
+
+let WINDOW_MS_STRING = formatWindowDuration(WINDOW_MS);
+
 // @desc    Get comments (Supports filtering by rating and sorting)
 // @route   GET /api/v1/comments
 // @route   GET /api/v1/restaurants/:restaurantId/comments
@@ -73,6 +91,20 @@ exports.addComment = async (req, res, next) => {
         if (!restaurant) {
             return res.status(404).json({ success: false, message: `No restaurant with id ${req.params.restaurantId}` });
         }
+
+        const windowStart = new Date(Date.now() - WINDOW_MS);
+        const recentCount = await Comment.countDocuments({
+            user: req.user.id,
+            createdAt: { $gte: windowStart }
+        });
+
+        if (recentCount >= COMMENT_LIMIT) {
+            return res.status(429).json({
+                success: false,
+                message: `Comment limit reached. You can post at most ${COMMENT_LIMIT} comments per ${WINDOW_MS_STRING}. Please try again later.`
+            });
+        }
+
         const existingComment = await Comment.findOne({
             restaurant: req.params.restaurantId,
             user: req.user.id
@@ -107,12 +139,10 @@ exports.updateComment = async (req, res, next) => {
             return res.status(404).json({ success: false, message: `No comment with id ${req.params.id}` });
         }
 
-        
         if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
+            return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
         }
 
-        
         req.body.isEdited = true;
 
         comment = await Comment.findByIdAndUpdate(req.params.id, req.body, {
@@ -142,7 +172,7 @@ exports.deleteComment = async (req, res, next) => {
         }
 
         if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to delete this comment` });
+            return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to delete this comment` });
         }
 
         await comment.deleteOne();
