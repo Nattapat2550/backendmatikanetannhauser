@@ -32,7 +32,18 @@ app.options(/.*/, cors());
 app.use(express.json());
 app.use(cookieParser());
 // app.use(mongoSanitize());
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+        imgSrc: ["'self'", "data:", "https://validator.swagger.io"]
+      },
+    },
+  })
+);
 // app.use(xss());
 // Rate Limit
 /*const limiter = rateLimit({
