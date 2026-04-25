@@ -31,7 +31,8 @@ app.options(/.*/, cors());
 
 app.use(express.json());
 app.use(cookieParser());
-// app.use(mongoSanitize());
+
+// ตั้งค่า Helmet ใหม่ให้ยอมรับ Script/CSS จาก CDN สำหรับ Swagger
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -39,18 +40,15 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-        imgSrc: ["'self'", "data:", "https://validator.swagger.io"]
+        imgSrc: ["'self'", "data:", "https://validator.swagger.io"],
+        connectSrc: ["'self'", "http://localhost:3000", "https://backendmatikanetannhauser.vercel.app"],
       },
     },
+    // ปิดการบล็อก Cross-Origin บางประเภทเพื่อให้โหลดหน้า UI ได้
+    crossOriginEmbedderPolicy: false, 
   })
 );
-// app.use(xss());
-// Rate Limit
-/*const limiter = rateLimit({
-    windowMs: 10*60*1000,
-    max: 100,
-});
-app.use(limiter);*/
+
 app.set('query parser','extended');
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
@@ -58,6 +56,7 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 app.get('/', (req, res) => {
     res.status(200).json({ success: true, message: "Welcome to Restaurant Reservation Backend API" });
 });
+
 app.use('/api/v1/restaurants', restaurants);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/reservations', reservations);
@@ -76,7 +75,10 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: 'http://backendmatikanetannhauser.vercel.app/api/v1',
+                url: 'https://backendmatikanetannhauser.vercel.app/api/v1',
+            },
+            {
+                url: 'http://localhost:3000/api/v1', // เพิ่ม Local server ให้เทสบนเครื่องได้
             }
         ],
     },
@@ -84,17 +86,21 @@ const swaggerOptions = {
 };
 
 const swaggerDoc = swaggerJsDoc(swaggerOptions);
+
+// บังคับให้โหลดไฟล์ CSS/JS จาก CDN เท่านั้น เพื่อป้องกันปัญหา Vercel หาไฟล์ local ไม่เจอ (MIME Error)
+const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css";
+const JS_URL = [
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js"
+];
+
 app.use('/api-docs',
     swaggerUI.serve,
-    swaggerUI.setup(
-        swaggerDoc, {
-            customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css',
-            customJs: [
-                'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js',
-            ],
-        }
-    )
+    swaggerUI.setup(swaggerDoc, {
+        customCssUrl: CSS_URL,
+        customJs: JS_URL,
+        customSiteTitle: "Restaurant API Documentation"
+    })
 );
 
 const PORT = process.env.PORT || 3000;
