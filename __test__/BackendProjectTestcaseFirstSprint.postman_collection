@@ -7180,7 +7180,7 @@
               "response": []
             },
             {
-              "name": "Login Admin (For Comments)",
+              "name": "Login Admin",
               "event": [
                 {
                   "listen": "test",
