@@ -29,7 +29,9 @@ exports.getComments = async (req, res, next) => {
         const { select, sort, ...rest } = req.query;
 
         // Build query
-        let query = Comment.find(rest);
+        let query = Comment.find(rest)
+            .populate({ path: 'restaurant' })
+            .populate({ path: 'user', select: 'name' });
 
         // Field selection
         if (select) {
@@ -56,10 +58,9 @@ exports.getComments = async (req, res, next) => {
 // @route   GET /api/v1/comments/:id
 exports.getComment = async (req, res, next) => {
     try {
-        const comment = await Comment.findById(req.params.id).populate({
-            path: 'user',
-            select: 'name'
-        });
+        const comment = await Comment.findById(req.params.id)
+            .populate({ path: 'restaurant' })
+            .populate({ path: 'user', select: 'name' });
 
         if (!comment) {
             return res.status(404).json({ success: false, message: `No comment with id ${req.params.id}` });

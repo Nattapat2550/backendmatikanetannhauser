@@ -28,17 +28,6 @@ const CommentSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true,
-    toJSON: { virtuals:true },
-    toObject: { virtuals:true }
-});
-
-CommentSchema.pre(/^find/, async function() {
-    this.populate({
-        path: 'restaurant'
-    }).populate({
-        path: 'user',
-        select: 'name'
-    });
 });
 
 module.exports = mongoose.model('Comment', CommentSchema);
