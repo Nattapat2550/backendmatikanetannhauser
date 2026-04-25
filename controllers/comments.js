@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const Comment = require('../models/Comment');
 const Restaurant = require('../models/Restaurant');
 
@@ -116,9 +118,13 @@ exports.addComment = async (req, res, next) => {
                 message: "You have already reviewed this restaurant"
             });
         }
-        const comment = await Comment.create(req.body);
 
+        const newComment = new Comment(req.body);
+        await newComment.validate();
+
+        const comment = await newComment.save();
         res.status(201).json({ success: true, data: comment });
+
     } catch (err) {
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
@@ -139,8 +145,8 @@ exports.updateComment = async (req, res, next) => {
             return res.status(404).json({ success: false, message: `No comment with id ${req.params.id}` });
         }
 
-        if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
+        if (comment.user.toString() !== req.user.id.toString() && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
         }
 
         req.body.isEdited = true;
@@ -152,6 +158,12 @@ exports.updateComment = async (req, res, next) => {
 
         res.status(200).json({ success: true, data: comment });
     } catch (err) {
+        if (err instanceof mongoose.Error.CastError) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid value for field '${err.path}': ${err.value}`
+            });
+        }
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
             return res.status(400).json({ success: false, message: messages });
@@ -172,7 +184,7 @@ exports.deleteComment = async (req, res, next) => {
         }
 
         if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to delete this comment` });
+            return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to delete this comment` });
         }
 
         await comment.deleteOne();

@@ -118,14 +118,6 @@ exports.getRestaurant= async (req,res,next)=>{
 //Create new Restaurant 
 exports.createRestaurant = async(req,res,next)=>{
     try {
-        req.body.owner = req.user.id; // แก้จาก user เป็น owner
-        const restaurant = await Restaurant.create(req.body);
-        
-        res.status (201).json({
-            success: true,
-            data: restaurant
-        });
-        
         const existingRestaurant = await Restaurant.findOne({ telephone: req.body.telephone });
         if(existingRestaurant){
             return res.status(400).json({
@@ -133,7 +125,17 @@ exports.createRestaurant = async(req,res,next)=>{
                 message: "This telephone number is already existed",
             });
         }
-    } catch(err) {
+
+        req.body.owner = req.user.id; // แก้จาก user เป็น owner
+        req.body.user = req.user.id; // แก้จาก user เป็น owner
+        const restaurant = await Restaurant.create(req.body);
+        
+        res.status (201).json({
+            success: true,
+            data: restaurant
+        });
+        
+    } catch (err) {
         if (err.name === 'ValidationError') { //lost info
             const errors = Object.values(err.errors).map(e => e.message);
 
@@ -164,7 +166,7 @@ exports.updateRestaurant= async (req, res,next)=> {
             return res.status (404).json({success:false});
         }
 
-        if(restaurant.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+        if(restaurant.user.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({
                 success: false, 
                 message: `User ${req.user.id} is not authorized to update this restaurant`
@@ -203,7 +205,7 @@ exports.deleteRestaurant = async (req,res,next)=>{
             return res.status(404).json({success:false, message:`Restaurant not found with id of ${req.params.id}`});
         }
 
-        if(restaurant.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+        if(restaurant.user.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({
                 success: false, 
                 message: `User ${req.user.id} is not authorized to delete this restaurant`
