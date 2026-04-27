@@ -130,22 +130,23 @@ exports.addComment = async (req, res, next) => {
 exports.updateComment = async (req, res, next) => {
     try {
         let comment = await Comment.findById(req.params.id);
-
+ 
         if (!comment) {
             return res.status(404).json({ success: false, message: `No comment with id ${req.params.id}` });
         }
-
+ 
         if (comment.user.toString() !== req.user.id.toString() && req.user.role !== 'admin') {
             return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
         }
-
+ 
         req.body.isEdited = true;
-
+        req.body.updatedAt = new Date();
+        
         comment = await Comment.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
-
+ 
         res.status(200).json({ success: true, data: comment });
     } catch (err) {
         if (err instanceof mongoose.Error.CastError) {
