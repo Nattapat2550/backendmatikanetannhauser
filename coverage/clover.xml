@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1777357187614" clover="3.2.0">
-  <project timestamp="1777357187614" name="All files">
-    <metrics statements="336" coveredstatements="332" conditionals="148" coveredconditionals="148" methods="33" coveredmethods="30" elements="517" coveredelements="510" complexity="0" loc="336" ncloc="336" packages="2" files="8" classes="8"/>
+<coverage generated="1777357360494" clover="3.2.0">
+  <project timestamp="1777357360494" name="All files">
+    <metrics statements="354" coveredstatements="350" conditionals="158" coveredconditionals="158" methods="36" coveredmethods="33" elements="548" coveredelements="541" complexity="0" loc="354" ncloc="354" packages="3" files="9" classes="9"/>
     <package name="controllers">
       <metrics statements="312" coveredstatements="312" conditionals="148" coveredconditionals="148" methods="30" coveredmethods="30"/>
       <file name="auth.js" path="C:\Users\Korn\Desktop\se-project-be-68-2-matikanetannhauser\controllers\auth.js">
@@ -329,6 +329,30 @@
         <line num="222" count="1" type="stmt"/>
       </file>
     </package>
+    <package name="middleware">
+      <metrics statements="18" coveredstatements="18" conditionals="10" coveredconditionals="10" methods="3" coveredmethods="3"/>
+      <file name="auth.js" path="C:\Users\Korn\Desktop\se-project-be-68-2-matikanetannhauser\middleware\auth.js">
+        <metrics statements="18" coveredstatements="18" conditionals="10" coveredconditionals="10" methods="3" coveredmethods="3"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="7" count="4" type="cond" truecount="4" falsecount="0"/>
+        <line num="8" count="3" type="stmt"/>
+        <line num="11" count="4" type="cond" truecount="4" falsecount="0"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="37" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+      </file>
+    </package>
     <package name="models">
       <metrics statements="24" coveredstatements="20" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="0"/>
       <file name="Comment.js" path="C:\Users\Korn\Desktop\se-project-be-68-2-matikanetannhauser\models\Comment.js">
@@ -354,18 +378,18 @@
       </file>
       <file name="User.js" path="C:\Users\Korn\Desktop\se-project-be-68-2-matikanetannhauser\models\User.js">
         <metrics statements="12" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="0"/>
-        <line num="1" count="1" type="stmt"/>
-        <line num="2" count="1" type="stmt"/>
-        <line num="3" count="1" type="stmt"/>
-        <line num="5" count="1" type="stmt"/>
-        <line num="47" count="1" type="stmt"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
         <line num="48" count="0" type="stmt"/>
         <line num="49" count="0" type="stmt"/>
-        <line num="52" count="1" type="stmt"/>
+        <line num="52" count="2" type="stmt"/>
         <line num="53" count="0" type="stmt"/>
-        <line num="60" count="1" type="stmt"/>
+        <line num="60" count="2" type="stmt"/>
         <line num="61" count="0" type="stmt"/>
-        <line num="64" count="1" type="stmt"/>
+        <line num="64" count="2" type="stmt"/>
       </file>
     </package>
   </project>
