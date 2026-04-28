@@ -65,6 +65,8 @@ app.use('/api/v1/comments', comments);
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
 
+const PORT = process.env.PORT || 3000;
+
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -75,6 +77,7 @@ const swaggerOptions = {
         },
         servers: [
             {
+                url: `http://localhost:${PORT}/api/v1`,
                 url: 'https://backendmatikanetannhauser.vercel.app/api/v1',
             },
             {
@@ -103,7 +106,9 @@ app.use('/api-docs',
     })
 );
 
-const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+}
 
 const server = app.listen(PORT, console.log('Server running in ', process.env.NODE_ENV, ' mode on port', PORT));
 
