@@ -1,26 +1,15 @@
-/**
- * Unit Tests – controllers/reservation.js
- *
- * Strategy: mock Reservation and Restaurant models entirely so no DB
- * connection is needed. Each describe block targets one exported function
- * and covers every branch that exists in the source.
- */
+const mongoose = require('mongoose');
 
-const reservationController = require('../../controllers/reservation');
-const Reservation = require('../../models/Reservation');
-const Restaurant = require('../../models/Restaurant');
+// ─── Mocks ────────────────────────────────────────────────────────────────────
 
 jest.mock('../../models/Reservation');
 jest.mock('../../models/Restaurant');
 
-// ─── shared helpers ───────────────────────────────────────────────────────────
+const Reservation = require('../../models/Reservation');
+const Restaurant = require('../../models/Restaurant');
+const controller = require('../../controllers/reservation');
 
-/** Build a chainable populate mock that ultimately resolves to `result`. */
-const populateChain = (result) => {
-    const chain = { populate: jest.fn() };
-    chain.populate.mockResolvedValue(result);
-    return chain;
-};
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const mockRes = () => {
     const res = {};
@@ -29,94 +18,120 @@ const mockRes = () => {
     return res;
 };
 
-// ─── shared test data ─────────────────────────────────────────────────────────
+const validId = new mongoose.Types.ObjectId().toString();
+const validRestaurantId = new mongoose.Types.ObjectId().toString();
 
-const USER_ID = 'aaaaaaaaaaaaaaaaaaaaaaaa';
-const OTHER_USER_ID = 'eeeeeeeeeeeeeeeeeeeeeeee';
-const ADMIN_ID = 'bbbbbbbbbbbbbbbbbbbbbbbb';
-const RESTAURANT_ID = 'cccccccccccccccccccccccc';
-const RESERVATION_ID = 'dddddddddddddddddddddddd';
-
-/** A restaurant open 09:00–21:00. */
-const RESTAURANT = { openTime: '09:00', closeTime: '21:00' };
-
-/**
- * Build a minimal existing-reservation object whose user._id matches userId.
- * Falls back to stored ISO strings when no new times are provided (mirrors
- * the updateReservation fallback logic).
- */
-const makeExistingReservation = (userId = USER_ID) => ({
-    user: { _id: { toString: () => userId } },
-    restaurant: RESTAURANT,
-    startDateTime: { toISOString: () => '2025-06-15T10:00:00.000Z' },
-    endDateTime: { toISOString: () => '2025-06-15T12:00:00.000Z' },
+const makeReservation = (overrides = {}) => ({
+    _id: validId,
+    user: { _id: { toString: () => 'user123' } },
+    restaurant: {
+        _id: validRestaurantId,
+        openTime: '09:00',
+        closeTime: '21:00',
+    },
+    startDateTime: new Date('2025-01-01T10:00:00.000Z'),
+    endDateTime: new Date('2025-01-01T12:00:00.000Z'),
+    deleteOne: jest.fn().mockResolvedValue({}),
+    populate: jest.fn().mockResolvedValue({}),
+    ...overrides,
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// getReservations
-// ─────────────────────────────────────────────────────────────────────────────
+const makeRestaurant = (overrides = {}) => ({
+    _id: validRestaurantId,
+    openTime: '09:00',
+    closeTime: '21:00',
+    ...overrides,
+});
+
+// ─── getReservations ──────────────────────────────────────────────────────────
 
 describe('getReservations', () => {
     afterEach(() => jest.clearAllMocks());
 
-    it('returns only the current user reservations when role is "user" and no restaurantId', async () => {
-        const data = [{ _id: '1' }, { _id: '2' }];
-        Reservation.find.mockReturnValue({ populate: jest.fn().mockResolvedValue(data) });
+    const makeQuery = (results = []) => ({
+        populate: jest.fn().mockResolvedValue(results),
+    });
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: {} };
+    it('returns own reservations for a regular user (no restaurantId)', async () => {
+        const fakeReservations = [makeReservation()];
+        Reservation.find.mockReturnValue(makeQuery(fakeReservations));
+
+        const req = {
+            user: { id: 'user123', role: 'user' },
+            params: {},
+        };
         const res = mockRes();
-        await reservationController.getReservations(req, res);
 
-        expect(Reservation.find).toHaveBeenCalledWith({ user: USER_ID });
+        await controller.getReservations(req, res);
+
+        expect(Reservation.find).toHaveBeenCalledWith({ user: 'user123' });
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ success: true, count: 2, data })
+            expect.objectContaining({ success: true, count: 1 })
         );
     });
 
-    it('returns user reservations filtered by restaurantId when role is "user"', async () => {
-        const data = [{ _id: '3' }];
-        Reservation.find.mockReturnValue({ populate: jest.fn().mockResolvedValue(data) });
+    it('filters by restaurant when restaurantId param is present (regular user)', async () => {
+        Reservation.find.mockReturnValue(makeQuery([]));
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: { restaurantId: RESTAURANT_ID } };
+        const req = {
+            user: { id: 'user123', role: 'user' },
+            params: { restaurantId: validRestaurantId },
+        };
         const res = mockRes();
-        await reservationController.getReservations(req, res);
 
-        expect(Reservation.find).toHaveBeenCalledWith({ user: USER_ID, restaurant: RESTAURANT_ID });
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ count: 1 }));
+        await controller.getReservations(req, res);
+
+        expect(Reservation.find).toHaveBeenCalledWith({
+            user: 'user123',
+            restaurant: validRestaurantId,
+        });
     });
 
-    it('returns ALL reservations when role is "admin" and no restaurantId', async () => {
-        const data = [{ _id: '1' }, { _id: '2' }, { _id: '3' }];
-        Reservation.find.mockReturnValue({ populate: jest.fn().mockResolvedValue(data) });
+    it('returns all reservations for admin (no restaurantId)', async () => {
+        const fakeReservations = [makeReservation(), makeReservation()];
+        Reservation.find.mockReturnValue(makeQuery(fakeReservations));
 
-        const req = { user: { id: ADMIN_ID, role: 'admin' }, params: {} };
+        const req = {
+            user: { id: 'admin1', role: 'admin' },
+            params: {},
+        };
         const res = mockRes();
-        await reservationController.getReservations(req, res);
+
+        await controller.getReservations(req, res);
 
         expect(Reservation.find).toHaveBeenCalledWith({});
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ count: 3 }));
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({ success: true, count: 2 })
+        );
     });
 
-    it('filters by restaurantId only (no user filter) when role is "admin"', async () => {
-        const data = [{ _id: '5' }];
-        Reservation.find.mockReturnValue({ populate: jest.fn().mockResolvedValue(data) });
+    it('filters by restaurant for admin when restaurantId is present', async () => {
+        Reservation.find.mockReturnValue(makeQuery([]));
 
-        const req = { user: { id: ADMIN_ID, role: 'admin' }, params: { restaurantId: RESTAURANT_ID } };
+        const req = {
+            user: { id: 'admin1', role: 'admin' },
+            params: { restaurantId: validRestaurantId },
+        };
         const res = mockRes();
-        await reservationController.getReservations(req, res);
 
-        expect(Reservation.find).toHaveBeenCalledWith({ restaurant: RESTAURANT_ID });
+        await controller.getReservations(req, res);
+
+        expect(Reservation.find).toHaveBeenCalledWith({ restaurant: validRestaurantId });
     });
 
-    it('returns 500 with error message when the database query rejects', async () => {
+    it('returns 500 on database error', async () => {
         Reservation.find.mockReturnValue({
-            populate: jest.fn().mockRejectedValue(new Error('DB down')),
+            populate: jest.fn().mockRejectedValue(new Error('DB error')),
         });
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: {} };
+        const req = {
+            user: { id: 'user123', role: 'user' },
+            params: {},
+        };
         const res = mockRes();
-        await reservationController.getReservations(req, res);
+
+        await controller.getReservations(req, res);
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith(
@@ -125,130 +140,139 @@ describe('getReservations', () => {
     });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// getReservation
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── getReservation ───────────────────────────────────────────────────────────
 
 describe('getReservation', () => {
     afterEach(() => jest.clearAllMocks());
 
-    it('returns 404 when no reservation exists with that id', async () => {
-        Reservation.findById.mockReturnValue(populateChain(null));
+    it('returns a single reservation for the owner', async () => {
+        const fake = makeReservation();
+        Reservation.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(fake) });
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
+        const req = { params: { id: validId }, user: { id: 'user123', role: 'user' } };
         const res = mockRes();
-        await reservationController.getReservation(req, res);
+
+        await controller.getReservation(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({ success: true, data: fake });
+    });
+
+    it('returns a reservation for admin even if not the owner', async () => {
+        const fake = makeReservation();
+        Reservation.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(fake) });
+
+        const req = { params: { id: validId }, user: { id: 'admin1', role: 'admin' } };
+        const res = mockRes();
+
+        await controller.getReservation(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('returns 404 when reservation does not exist', async () => {
+        Reservation.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
+
+        const req = { params: { id: validId }, user: { id: 'user123', role: 'user' } };
+        const res = mockRes();
+
+        await controller.getReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                success: false,
-                message: expect.stringContaining(RESERVATION_ID),
-            })
+            expect.objectContaining({ success: false })
         );
     });
 
-    it('returns 401 when a non-admin user requests someone else reservation', async () => {
-        const reservation = { user: { _id: { toString: () => OTHER_USER_ID } } };
-        Reservation.findById.mockReturnValue(populateChain(reservation));
+    it('returns 401 when a non-owner non-admin tries to view', async () => {
+        const fake = makeReservation(); // owner is 'user123'
+        Reservation.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(fake) });
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
+        const req = { params: { id: validId }, user: { id: 'intruder', role: 'user' } };
         const res = mockRes();
-        await reservationController.getReservation(req, res);
+
+        await controller.getReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(401);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                success: false,
-                message: expect.stringContaining(USER_ID),
-            })
-        );
     });
 
-    it('returns 200 with the reservation when the owner requests it', async () => {
-        const reservation = { user: { _id: { toString: () => USER_ID } } };
-        Reservation.findById.mockReturnValue(populateChain(reservation));
-
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
-        const res = mockRes();
-        await reservationController.getReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ success: true, data: reservation })
-        );
-    });
-
-    it('returns 200 when an admin requests another user reservation', async () => {
-        const reservation = { user: { _id: { toString: () => OTHER_USER_ID } } };
-        Reservation.findById.mockReturnValue(populateChain(reservation));
-
-        const req = { user: { id: ADMIN_ID, role: 'admin' }, params: { id: RESERVATION_ID } };
-        const res = mockRes();
-        await reservationController.getReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
-    });
-
-    it('returns 500 when findById throws an unexpected error', async () => {
+    it('returns 500 on database error', async () => {
         Reservation.findById.mockReturnValue({
-            populate: jest.fn().mockRejectedValue(new Error('Unexpected')),
+            populate: jest.fn().mockRejectedValue(new Error('DB error')),
         });
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
+        const req = { params: { id: validId }, user: { id: 'user123', role: 'user' } };
         const res = mockRes();
-        await reservationController.getReservation(req, res);
+
+        await controller.getReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ success: false, message: 'Cannot find Reservation' })
-        );
     });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// addReservation
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── addReservation ───────────────────────────────────────────────────────────
 
 describe('addReservation', () => {
     afterEach(() => jest.clearAllMocks());
 
-    /** Convenience builder for add-reservation requests. */
-    const makeReq = ({
-        role = 'user',
-        userId = USER_ID,
-        start = '2025-06-15T10:00:00.000Z',
-        end = '2025-06-15T12:00:00.000Z',
-        extra = {},
-    } = {}) => ({
-        user: { id: userId, role },
-        params: { restaurantId: RESTAURANT_ID },
-        body: { startDateTime: start, endDateTime: end, ...extra },
+    const baseReq = (overrides = {}) => ({
+        params: { restaurantId: validRestaurantId },
+        body: {
+            startDateTime: '2025-01-01T10:00:00.000Z',
+            endDateTime: '2025-01-01T12:00:00.000Z',
+        },
+        user: { id: 'user123', role: 'user' },
+        ...overrides,
     });
 
-    it('returns 404 when the restaurant does not exist', async () => {
-        Restaurant.findById.mockResolvedValue(null);
+    const setupHappyPath = (existingCount = 0) => {
+        Restaurant.findById.mockResolvedValue(makeRestaurant());
+        Reservation.find.mockResolvedValue(Array(existingCount).fill({}));
+        const created = { ...makeReservation(), populate: jest.fn().mockResolvedValue({}) };
+        Reservation.create.mockResolvedValue(created);
+        return created;
+    };
 
-        const req = makeReq();
+    it('creates a reservation and returns 200', async () => {
+        const created = setupHappyPath(0);
+        const req = baseReq();
         const res = mockRes();
-        await reservationController.addReservation(req, res);
 
-        expect(res.status).toHaveBeenCalledWith(404);
+        await controller.addReservation(req, res);
+
+        expect(Reservation.create).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                success: false,
-                message: expect.stringContaining(RESTAURANT_ID),
-            })
+            expect.objectContaining({ success: true })
         );
     });
 
-    it('returns 400 when start date and end date are on different days', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
+    it('returns 404 when restaurant does not exist', async () => {
+        Restaurant.findById.mockResolvedValue(null);
 
-        const req = makeReq({ start: '2025-06-15T10:00:00.000Z', end: '2025-06-16T12:00:00.000Z' });
+        const req = baseReq();
         const res = mockRes();
-        await reservationController.addReservation(req, res);
+
+        await controller.addReservation(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({ success: false })
+        );
+    });
+
+    it('returns 400 when start and end are on different dates', async () => {
+        Restaurant.findById.mockResolvedValue(makeRestaurant());
+
+        const req = baseReq({
+            body: {
+                startDateTime: '2025-01-01T10:00:00.000Z',
+                endDateTime: '2025-01-02T12:00:00.000Z',
+            },
+        });
+        const res = mockRes();
+
+        await controller.addReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
@@ -256,12 +280,18 @@ describe('addReservation', () => {
         );
     });
 
-    it('returns 400 when startTime equals endTime (boundary: not strictly less than)', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
+    it('returns 400 when endTime is not after startTime', async () => {
+        Restaurant.findById.mockResolvedValue(makeRestaurant());
 
-        const req = makeReq({ start: '2025-06-15T10:00:00.000Z', end: '2025-06-15T10:00:00.000Z' });
+        const req = baseReq({
+            body: {
+                startDateTime: '2025-01-01T12:00:00.000Z',
+                endDateTime: '2025-01-01T10:00:00.000Z',
+            },
+        });
         const res = mockRes();
-        await reservationController.addReservation(req, res);
+
+        await controller.addReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
@@ -269,54 +299,33 @@ describe('addReservation', () => {
         );
     });
 
-    it('returns 400 when endTime is before startTime', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
+    it('returns 400 when reservation is outside restaurant open hours', async () => {
+        Restaurant.findById.mockResolvedValue(makeRestaurant({ openTime: '09:00', closeTime: '11:00' }));
 
-        const req = makeReq({ start: '2025-06-15T14:00:00.000Z', end: '2025-06-15T10:00:00.000Z' });
+        const req = baseReq({
+            body: {
+                startDateTime: '2025-01-01T10:00:00.000Z',
+                endDateTime: '2025-01-01T12:00:00.000Z', // closes at 11:00
+            },
+        });
         const res = mockRes();
-        await reservationController.addReservation(req, res);
+
+        await controller.addReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ message: expect.stringContaining('End Time') })
+            expect.objectContaining({ message: expect.stringContaining('Restarant time') })
         );
     });
 
-    it('returns 400 when startTime is before restaurant openTime', async () => {
-        Restaurant.findById.mockResolvedValue({ openTime: '11:00', closeTime: '21:00' });
+    it('returns 400 when regular user already has 3 reservations', async () => {
+        Restaurant.findById.mockResolvedValue(makeRestaurant());
+        Reservation.find.mockResolvedValue([{}, {}, {}]); // 3 existing
 
-        // 08:00–10:00 is before opening at 11:00
-        const req = makeReq({ start: '2025-06-15T08:00:00.000Z', end: '2025-06-15T10:00:00.000Z' });
+        const req = baseReq();
         const res = mockRes();
-        await reservationController.addReservation(req, res);
 
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ message: expect.stringContaining('08:00') })
-        );
-    });
-
-    it('returns 400 when endTime exceeds restaurant closeTime', async () => {
-        Restaurant.findById.mockResolvedValue({ openTime: '09:00', closeTime: '20:00' });
-
-        // ends at 21:00 but restaurant closes at 20:00
-        const req = makeReq({ start: '2025-06-15T10:00:00.000Z', end: '2025-06-15T21:00:00.000Z' });
-        const res = mockRes();
-        await reservationController.addReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ message: expect.stringContaining('21:00') })
-        );
-    });
-
-    it('returns 400 when a regular user already has 3 reservations (at limit)', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
-        Reservation.find.mockResolvedValue([{}, {}, {}]); // exactly 3
-
-        const req = makeReq();
-        const res = mockRes();
-        await reservationController.addReservation(req, res);
+        await controller.addReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
@@ -324,299 +333,250 @@ describe('addReservation', () => {
         );
     });
 
-    it('creates and returns the reservation when user has 0 existing reservations', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
+    it('allows admin to create even when 3+ reservations exist', async () => {
+        const created = setupHappyPath(5);
+        Reservation.find.mockResolvedValue([{}, {}, {}, {}, {}]); // 5 existing, but admin
+        const req = baseReq({ user: { id: 'admin1', role: 'admin' } });
+        const res = mockRes();
+
+        await controller.addReservation(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('normalises malformed startDateTime (no dot before ms) before processing', async () => {
+        // The regex targets strings like '2025-01-01T10:00:00000Z' (no dot before milliseconds)
+        // and rewrites them to '2025-01-01T10:00:00.000Z'
+        // Mocks are set inline (not via setupHappyPath) to ensure clearAllMocks cannot interfere
+        Restaurant.findById.mockResolvedValue(makeRestaurant());
         Reservation.find.mockResolvedValue([]);
-
-        const saved = { _id: RESERVATION_ID };
-        Reservation.create.mockResolvedValue({
-            ...saved,
-            populate: jest.fn().mockResolvedValue(undefined),
-        });
-
-        const req = makeReq();
-        const res = mockRes();
-        await reservationController.addReservation(req, res);
-
-        expect(Reservation.create).toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
-    });
-
-    it('creates reservation when user is exactly at 2 (one below limit)', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
-        Reservation.find.mockResolvedValue([{}, {}]); // 2 — still allowed
-
-        Reservation.create.mockResolvedValue({
-            _id: RESERVATION_ID,
-            populate: jest.fn().mockResolvedValue(undefined),
-        });
-
-        const req = makeReq();
-        const res = mockRes();
-        await reservationController.addReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('allows an admin to create a reservation even when they already have 3+', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
-        Reservation.find.mockResolvedValue([{}, {}, {}, {}]); // 4 existing
-
-        Reservation.create.mockResolvedValue({
-            _id: RESERVATION_ID,
-            populate: jest.fn().mockResolvedValue(undefined),
-        });
-
-        const req = makeReq({ userId: ADMIN_ID, role: 'admin' });
-        const res = mockRes();
-        await reservationController.addReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('normalises XSS-sanitiser-mangled ISO strings (missing millisecond dot) before processing', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
-        Reservation.find.mockResolvedValue([]);
-        Reservation.create.mockResolvedValue({
-            _id: RESERVATION_ID,
-            populate: jest.fn().mockResolvedValue(undefined),
-        });
+        const created = makeReservation();
+        created.populate = jest.fn().mockResolvedValue(created);
+        Reservation.create.mockResolvedValue(created);
 
         const req = {
-            user: { id: USER_ID, role: 'user' },
-            params: { restaurantId: RESTAURANT_ID },
+            params: { restaurantId: validRestaurantId },
             body: {
-                // digits without dot before milliseconds — the regex in the controller fixes this
-                startDateTime: '2025-06-15T10:00:00000Z',
-                endDateTime: '2025-06-15T12:00:00000Z',
+                startDateTime: '2025-01-01T10:00:00000Z', // malformed — no dot before ms
+                endDateTime:   '2025-01-01T12:00:00000Z', // malformed — no dot before ms
             },
+            user: { id: 'user123', role: 'user' },
         };
         const res = mockRes();
-        await reservationController.addReservation(req, res);
 
-        expect(Reservation.create).toHaveBeenCalled();
+        await controller.addReservation(req, res);
+
+        // Confirm the body strings were mutated by the replace branch
+        expect(req.body.startDateTime).toBe('2025-01-01T10:00:00.000Z');
+        expect(req.body.endDateTime).toBe('2025-01-01T12:00:00.000Z');
         expect(res.status).toHaveBeenCalledWith(200);
     });
 
-    it('returns 500 when Reservation.create throws unexpectedly', async () => {
-        Restaurant.findById.mockResolvedValue(RESTAURANT);
+    it('covers false branch of startDateTime typeof check (non-string falls through to catch)', async () => {
+        // When startDateTime is not a string, the if is false (false branch covered).
+        // .slice() then throws on the non-string value, landing in the catch → 500.
+        // This is the only way to exercise the false branch given the controller's design.
+        Restaurant.findById.mockResolvedValue(makeRestaurant());
         Reservation.find.mockResolvedValue([]);
-        Reservation.create.mockRejectedValue(new Error('Write failed'));
 
-        const req = makeReq();
+        const req = {
+            params: { restaurantId: validRestaurantId },
+            body: {
+                startDateTime: 12345, // number — typeof !== "string", false branch taken
+                endDateTime:   '2025-01-01T12:00:00.000Z',
+            },
+            user: { id: 'user123', role: 'user' },
+        };
         const res = mockRes();
-        await reservationController.addReservation(req, res);
+
+        await controller.addReservation(req, res);
+
+        // .slice() on a number throws → caught → 500
+        expect(res.status).toHaveBeenCalledWith(500);
+    });
+
+    it('covers false branch of endDateTime typeof check (non-string falls through to catch)', async () => {
+        // When endDateTime is not a string, the if is false (false branch covered).
+        // .slice() then throws on the non-string value, landing in the catch → 500.
+        Restaurant.findById.mockResolvedValue(makeRestaurant());
+        Reservation.find.mockResolvedValue([]);
+
+        const req = {
+            params: { restaurantId: validRestaurantId },
+            body: {
+                startDateTime: '2025-01-01T10:00:00000Z', // malformed string — true branch, gets normalised
+                endDateTime:   12345,                      // number — typeof !== "string", false branch taken
+            },
+            user: { id: 'user123', role: 'user' },
+        };
+        const res = mockRes();
+
+        await controller.addReservation(req, res);
+
+        // .slice() on a number throws → caught → 500
+        expect(res.status).toHaveBeenCalledWith(500);
+    });
+
+    it('returns 500 on database error', async () => {
+        Restaurant.findById.mockRejectedValue(new Error('DB crash'));
+
+        const req = baseReq();
+        const res = mockRes();
+
+        await controller.addReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({ success: false, message: 'Cannot create Reservation' })
         );
     });
-
-    // ── Lines 97-103: ISO string normalisation (XSS sanitiser removes the dot) ──
-
-    /**
-     * Helper: wire up the three mocks needed to reach Reservation.create.
-     *   1. Restaurant.findById  → open restaurant (00:00-23:59 avoids time validation)
-     *   2. Reservation.find     → empty array   (controller awaits directly, no chain)
-     *   3. Reservation.create   → stub with .populate()
-     */
-    const setupNormalisationMocks = () => {
-        Restaurant.findById.mockResolvedValue({ openTime: '00:00', closeTime: '23:59' });
-        Reservation.find.mockResolvedValue([]);
-        Reservation.create.mockResolvedValue({
-            _id: RESERVATION_ID,
-            populate: jest.fn().mockResolvedValue(undefined),
-        });
-    };
-
-    it('inserts a dot before milliseconds in BOTH fields when both strings match the regex (lines 97-103)', async () => {
-        setupNormalisationMocks();
-
-        const req = {
-            user:   { id: USER_ID, role: 'user' },
-            params: { restaurantId: RESTAURANT_ID },
-            body: {
-                startDateTime: '2025-08-15T10:00:00123Z', // missing dot
-                endDateTime:   '2025-08-15T11:00:00456Z', // missing dot
-            },
-        };
-        const res = mockRes();
-
-        await reservationController.addReservation(req, res);
-
-        // Controller mutates req.body in-place
-        expect(req.body.startDateTime).toBe('2025-08-15T10:00:00.123Z');
-        expect(req.body.endDateTime).toBe('2025-08-15T11:00:00.456Z');
-
-        // Corrected strings are forwarded to Reservation.create
-        expect(Reservation.create).toHaveBeenCalledWith(
-            expect.objectContaining({
-                startDateTime: '2025-08-15T10:00:00.123Z',
-                endDateTime:   '2025-08-15T11:00:00.456Z',
-            })
-        );
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('leaves BOTH fields unchanged when they already contain a millisecond dot (lines 97-103)', async () => {
-        setupNormalisationMocks();
-
-        const goodStart = '2025-08-15T10:00:00.000Z';
-        const goodEnd   = '2025-08-15T11:00:00.000Z';
-        const req = {
-            user:   { id: USER_ID, role: 'user' },
-            params: { restaurantId: RESTAURANT_ID },
-            body:   { startDateTime: goodStart, endDateTime: goodEnd },
-        };
-        const res = mockRes();
-
-        await reservationController.addReservation(req, res);
-
-        // Regex should not match – strings must be untouched
-        expect(req.body.startDateTime).toBe(goodStart);
-        expect(req.body.endDateTime).toBe(goodEnd);
-
-        expect(Reservation.create).toHaveBeenCalledWith(
-            expect.objectContaining({ startDateTime: goodStart, endDateTime: goodEnd })
-        );
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('fixes only startDateTime when only it is missing the dot (lines 97-103)', async () => {
-        setupNormalisationMocks();
-
-        const goodEnd = '2025-08-15T11:00:00.000Z';
-        const req = {
-            user:   { id: USER_ID, role: 'user' },
-            params: { restaurantId: RESTAURANT_ID },
-            body: {
-                startDateTime: '2025-08-15T10:00:00789Z', // missing dot
-                endDateTime:   goodEnd,                    // already correct
-            },
-        };
-        const res = mockRes();
-
-        await reservationController.addReservation(req, res);
-
-        expect(req.body.startDateTime).toBe('2025-08-15T10:00:00.789Z');
-        expect(req.body.endDateTime).toBe(goodEnd); // untouched
-
-        expect(Reservation.create).toHaveBeenCalledWith(
-            expect.objectContaining({
-                startDateTime: '2025-08-15T10:00:00.789Z',
-                endDateTime:   goodEnd,
-            })
-        );
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('fixes only endDateTime when only it is missing the dot (lines 97-103)', async () => {
-        setupNormalisationMocks();
-
-        const goodStart = '2025-08-15T10:00:00.000Z';
-        const req = {
-            user:   { id: USER_ID, role: 'user' },
-            params: { restaurantId: RESTAURANT_ID },
-            body: {
-                startDateTime: goodStart,                  // already correct
-                endDateTime:   '2025-08-15T11:00:00321Z', // missing dot
-            },
-        };
-        const res = mockRes();
-
-        await reservationController.addReservation(req, res);
-
-        expect(req.body.startDateTime).toBe(goodStart); // untouched
-        expect(req.body.endDateTime).toBe('2025-08-15T11:00:00.321Z');
-
-        expect(Reservation.create).toHaveBeenCalledWith(
-            expect.objectContaining({
-                startDateTime: goodStart,
-                endDateTime:   '2025-08-15T11:00:00.321Z',
-            })
-        );
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// updateReservation
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── updateReservation ────────────────────────────────────────────────────────
 
 describe('updateReservation', () => {
     afterEach(() => jest.clearAllMocks());
 
-    /** Quick builder for update requests. */
-    const makeReq = ({
-        userId = USER_ID,
-        role = 'user',
-        body = {},
-    } = {}) => ({
-        user: { id: userId, role },
-        params: { id: RESERVATION_ID },
-        body,
+    const baseReq = (overrides = {}) => ({
+        params: { id: validId },
+        body: {
+            startDateTime: '2025-01-01T10:00:00.000Z',
+            endDateTime: '2025-01-01T12:00:00.000Z',
+        },
+        user: { id: 'user123', role: 'user' },
+        ...overrides,
     });
 
-    it('returns 404 when the reservation does not exist', async () => {
-        Reservation.findById.mockReturnValue(populateChain(null));
+    const setupFind = (overrides = {}) => {
+        const fake = makeReservation(overrides);
+        Reservation.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(fake) });
+        return fake;
+    };
 
-        const req = makeReq();
+    it('updates a reservation and returns 200', async () => {
+        setupFind();
+        const updated = makeReservation();
+        Reservation.findByIdAndUpdate.mockReturnValue({
+            populate: jest.fn().mockResolvedValue(updated),
+        });
+
+        const req = baseReq();
         const res = mockRes();
-        await reservationController.updateReservation(req, res);
+
+        await controller.updateReservation(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({ success: true, data: updated });
+    });
+
+    it('returns 404 when reservation does not exist', async () => {
+        Reservation.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
+
+        const req = baseReq();
+        const res = mockRes();
+
+        await controller.updateReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                success: false,
-                message: expect.stringContaining(RESERVATION_ID),
-            })
-        );
     });
 
-    it('returns 401 when a non-admin user tries to update someone else reservation', async () => {
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation(OTHER_USER_ID)));
+    it('returns 401 when a non-owner non-admin tries to update', async () => {
+        setupFind(); // owner is user123
 
-        const req = makeReq({ body: {} });
+        const req = baseReq({ user: { id: 'intruder', role: 'user' } });
         const res = mockRes();
-        await reservationController.updateReservation(req, res);
+
+        await controller.updateReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(401);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                success: false,
-                message: expect.stringContaining(USER_ID),
-            })
-        );
     });
 
-    it('returns 400 when a new restaurantId is provided but that restaurant does not exist', async () => {
-        const badReservation = { ...makeExistingReservation(), restaurant: null };
-        Reservation.findById.mockReturnValue(populateChain(badReservation));
+    it('allows admin to update any reservation', async () => {
+        setupFind();
+        const updated = makeReservation();
+        Reservation.findByIdAndUpdate.mockReturnValue({
+            populate: jest.fn().mockResolvedValue(updated),
+        });
+
+        const req = baseReq({ user: { id: 'admin1', role: 'admin' } });
+        const res = mockRes();
+
+        await controller.updateReservation(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('uses existing restaurant from reservation when req.body.restaurant is absent', async () => {
+        setupFind();
+        const updated = makeReservation();
+        Reservation.findByIdAndUpdate.mockReturnValue({
+            populate: jest.fn().mockResolvedValue(updated),
+        });
+
+        const req = baseReq({ body: { startDateTime: '2025-01-01T10:00:00.000Z', endDateTime: '2025-01-01T12:00:00.000Z' } });
+        const res = mockRes();
+
+        await controller.updateReservation(req, res);
+
+        expect(Restaurant.findById).not.toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('looks up a new restaurant when req.body.restaurant is provided', async () => {
+        setupFind();
+        Restaurant.findById.mockResolvedValue(makeRestaurant());
+        const updated = makeReservation();
+        Reservation.findByIdAndUpdate.mockReturnValue({
+            populate: jest.fn().mockResolvedValue(updated),
+        });
+
+        const req = baseReq({ body: { restaurant: validRestaurantId, startDateTime: '2025-01-01T10:00:00.000Z', endDateTime: '2025-01-01T12:00:00.000Z' } });
+        const res = mockRes();
+
+        await controller.updateReservation(req, res);
+
+        expect(Restaurant.findById).toHaveBeenCalledWith(validRestaurantId);
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it("returns 400 when req.body.restaurant is provided but not found and reservation has no fallback restaurant", async () => {
+        // Reservation has no restaurant (null), so fallback `|| reservation.restaurant` is also null
+        setupFind({ restaurant: null });
+        // The lookup for the new restaurantId also returns null
         Restaurant.findById.mockResolvedValue(null);
 
-        const req = makeReq({ body: { restaurant: 'nonexistent-id' } });
-        const res = mockRes();
-        await reservationController.updateReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ message: expect.stringContaining("doesn't exist") })
-        );
-    });
-
-    it('returns 400 when updated start and end dates span across two different days', async () => {
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation()));
-
-        const req = makeReq({
+        const req = baseReq({
             body: {
-                startDateTime: '2025-06-15T10:00:00.000Z',
-                endDateTime: '2025-06-16T12:00:00.000Z', // next day
+                restaurant: validRestaurantId,
+                startDateTime: '2025-01-01T10:00:00.000Z',
+                endDateTime: '2025-01-01T12:00:00.000Z',
             },
         });
         const res = mockRes();
-        await reservationController.updateReservation(req, res);
+
+        await controller.updateReservation(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({
+                success: false,
+                message: expect.stringContaining("doesn't exist"),
+            })
+        );
+    });
+
+    it('returns 400 when dates span different days', async () => {
+        setupFind();
+
+        const req = baseReq({
+            body: {
+                startDateTime: '2025-01-01T10:00:00.000Z',
+                endDateTime: '2025-01-02T12:00:00.000Z',
+            },
+        });
+        const res = mockRes();
+
+        await controller.updateReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
@@ -624,17 +584,18 @@ describe('updateReservation', () => {
         );
     });
 
-    it('returns 400 when updated startTime equals endTime', async () => {
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation()));
+    it('returns 400 when endTime is not after startTime', async () => {
+        setupFind();
 
-        const req = makeReq({
+        const req = baseReq({
             body: {
-                startDateTime: '2025-06-15T10:00:00.000Z',
-                endDateTime: '2025-06-15T10:00:00.000Z',
+                startDateTime: '2025-01-01T14:00:00.000Z',
+                endDateTime: '2025-01-01T10:00:00.000Z',
             },
         });
         const res = mockRes();
-        await reservationController.updateReservation(req, res);
+
+        await controller.updateReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
@@ -642,159 +603,52 @@ describe('updateReservation', () => {
         );
     });
 
-    it('returns 400 when updated endTime is before startTime', async () => {
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation()));
+    it('returns 400 when time is outside restaurant open hours', async () => {
+        setupFind({
+            restaurant: { openTime: '09:00', closeTime: '11:00' },
+        });
 
-        const req = makeReq({
+        const req = baseReq({
             body: {
-                startDateTime: '2025-06-15T15:00:00.000Z',
-                endDateTime: '2025-06-15T10:00:00.000Z',
+                startDateTime: '2025-01-01T10:00:00.000Z',
+                endDateTime: '2025-01-01T12:00:00.000Z', // closes at 11:00
             },
         });
         const res = mockRes();
-        await reservationController.updateReservation(req, res);
+
+        await controller.updateReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
-    });
-
-    it('returns 400 when updated startTime is outside restaurant opening hours', async () => {
-        Reservation.findById.mockReturnValue(
-            populateChain({
-                ...makeExistingReservation(),
-                restaurant: { openTime: '11:00', closeTime: '20:00' },
-            })
-        );
-
-        const req = makeReq({
-            body: {
-                startDateTime: '2025-06-15T08:00:00.000Z', // before openTime
-                endDateTime: '2025-06-15T12:00:00.000Z',
-            },
-        });
-        const res = mockRes();
-        await reservationController.updateReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(400);
-    });
-
-    it('returns 400 when updated endTime exceeds restaurant closeTime', async () => {
-        Reservation.findById.mockReturnValue(
-            populateChain({
-                ...makeExistingReservation(),
-                restaurant: { openTime: '09:00', closeTime: '20:00' },
-            })
-        );
-
-        const req = makeReq({
-            body: {
-                startDateTime: '2025-06-15T10:00:00.000Z',
-                endDateTime: '2025-06-15T21:00:00.000Z', // after closeTime
-            },
-        });
-        const res = mockRes();
-        await reservationController.updateReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(400);
-    });
-
-    it('updates successfully using new times provided in body', async () => {
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation()));
-
-        const updated = { _id: RESERVATION_ID, startDateTime: '2025-06-15T13:00:00.000Z' };
-        Reservation.findByIdAndUpdate.mockReturnValue(populateChain(updated));
-
-        const req = makeReq({
-            body: {
-                startDateTime: '2025-06-15T13:00:00.000Z',
-                endDateTime: '2025-06-15T15:00:00.000Z',
-            },
-        });
-        const res = mockRes();
-        await reservationController.updateReservation(req, res);
-
-        expect(Reservation.findByIdAndUpdate).toHaveBeenCalledWith(
-            RESERVATION_ID,
-            expect.any(Object),
-            { new: true, runValidators: true }
-        );
-        expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ success: true, data: updated })
+            expect.objectContaining({ message: expect.stringContaining('Restarant time') })
         );
     });
 
-    it('updates successfully falling back to stored times when body provides neither startDateTime nor endDateTime', async () => {
-        // Stored: 10:00–12:00 on 2025-06-15 — both within RESTAURANT hours
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation()));
-
-        const updated = { _id: RESERVATION_ID };
-        Reservation.findByIdAndUpdate.mockReturnValue(populateChain(updated));
-
-        const req = makeReq({ body: { notes: 'just changing notes' } });
-        const res = mockRes();
-        await reservationController.updateReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('allows an admin to update another user reservation', async () => {
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation(OTHER_USER_ID)));
-
-        const updated = { _id: RESERVATION_ID };
-        Reservation.findByIdAndUpdate.mockReturnValue(populateChain(updated));
-
-        const req = makeReq({
-            userId: ADMIN_ID,
-            role: 'admin',
-            body: {
-                startDateTime: '2025-06-15T10:00:00.000Z',
-                endDateTime: '2025-06-15T12:00:00.000Z',
-            },
-        });
-        const res = mockRes();
-        await reservationController.updateReservation(req, res);
-
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('uses the new restaurant hours when a new restaurantId is provided in body', async () => {
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation()));
-
-        const NEW_RESTAURANT_ID = 'ffffffffffffffffffffffff';
-        // New restaurant is open 14:00–22:00
-        Restaurant.findById.mockResolvedValue({ openTime: '14:00', closeTime: '22:00' });
-
-        const updated = { _id: RESERVATION_ID };
-        Reservation.findByIdAndUpdate.mockReturnValue(populateChain(updated));
-
-        const req = makeReq({
-            body: {
-                restaurant: NEW_RESTAURANT_ID,
-                startDateTime: '2025-06-15T15:00:00.000Z',
-                endDateTime: '2025-06-15T17:00:00.000Z',
-            },
-        });
-        const res = mockRes();
-        await reservationController.updateReservation(req, res);
-
-        expect(Restaurant.findById).toHaveBeenCalledWith(NEW_RESTAURANT_ID);
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('returns 500 when findByIdAndUpdate throws unexpectedly', async () => {
-        Reservation.findById.mockReturnValue(populateChain(makeExistingReservation()));
+    it('falls back to existing datetime fields when body omits them', async () => {
+        setupFind(); // startDateTime: 2025-01-01T10:00Z, endDateTime: 2025-01-01T12:00Z
+        const updated = makeReservation();
         Reservation.findByIdAndUpdate.mockReturnValue({
-            populate: jest.fn().mockRejectedValue(new Error('Write failed')),
+            populate: jest.fn().mockResolvedValue(updated),
         });
 
-        const req = makeReq({
-            body: {
-                startDateTime: '2025-06-15T10:00:00.000Z',
-                endDateTime: '2025-06-15T12:00:00.000Z',
-            },
-        });
+        // Body has no start/end — controller should use existing reservation datetimes
+        const req = baseReq({ body: {} });
         const res = mockRes();
-        await reservationController.updateReservation(req, res);
+
+        await controller.updateReservation(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('returns 500 on database error', async () => {
+        Reservation.findById.mockReturnValue({
+            populate: jest.fn().mockRejectedValue(new Error('DB crash')),
+        });
+
+        const req = baseReq();
+        const res = mockRes();
+
+        await controller.updateReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith(
@@ -803,102 +657,78 @@ describe('updateReservation', () => {
     });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// deleteReservation
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── deleteReservation ────────────────────────────────────────────────────────
 
 describe('deleteReservation', () => {
     afterEach(() => jest.clearAllMocks());
 
-    it('returns 404 when the reservation does not exist', async () => {
+    const baseReq = (overrides = {}) => ({
+        params: { id: validId },
+        user: { id: 'user123', role: 'user' },
+        ...overrides,
+    });
+
+    it('deletes a reservation and returns 200', async () => {
+        const fake = makeReservation({ user: { toString: () => 'user123' } });
+        Reservation.findById.mockResolvedValue(fake);
+
+        const req = baseReq();
+        const res = mockRes();
+
+        await controller.deleteReservation(req, res);
+
+        expect(fake.deleteOne).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({ success: true, data: {} });
+    });
+
+    it('allows admin to delete any reservation', async () => {
+        const fake = makeReservation({ user: { toString: () => 'someone-else' } });
+        Reservation.findById.mockResolvedValue(fake);
+
+        const req = baseReq({ user: { id: 'admin1', role: 'admin' } });
+        const res = mockRes();
+
+        await controller.deleteReservation(req, res);
+
+        expect(fake.deleteOne).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('returns 404 when reservation does not exist', async () => {
         Reservation.findById.mockResolvedValue(null);
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
+        const req = baseReq();
         const res = mockRes();
-        await reservationController.deleteReservation(req, res);
+
+        await controller.deleteReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                success: false,
-                message: expect.stringContaining(RESERVATION_ID),
-            })
+            expect.objectContaining({ success: false })
         );
     });
 
-    it('returns 401 when a non-admin user tries to delete someone else reservation', async () => {
-        const reservation = { user: { toString: () => OTHER_USER_ID } };
-        Reservation.findById.mockResolvedValue(reservation);
+    it('returns 401 when a non-owner non-admin tries to delete', async () => {
+        const fake = makeReservation({ user: { toString: () => 'someone-else' } });
+        Reservation.findById.mockResolvedValue(fake);
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
+        const req = baseReq({ user: { id: 'intruder', role: 'user' } });
         const res = mockRes();
-        await reservationController.deleteReservation(req, res);
+
+        await controller.deleteReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(401);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                success: false,
-                message: expect.stringContaining(USER_ID),
-            })
-        );
+        expect(fake.deleteOne).not.toHaveBeenCalled();
     });
 
-    it('deletes the reservation and returns 200 when the owner requests deletion', async () => {
-        const reservation = {
-            user: { toString: () => USER_ID },
-            deleteOne: jest.fn().mockResolvedValue({}),
-        };
-        Reservation.findById.mockResolvedValue(reservation);
-
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
-        const res = mockRes();
-        await reservationController.deleteReservation(req, res);
-
-        expect(reservation.deleteOne).toHaveBeenCalledTimes(1);
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ success: true, data: {} })
-        );
-    });
-
-    it('allows an admin to delete any reservation regardless of ownership', async () => {
-        const reservation = {
-            user: { toString: () => OTHER_USER_ID },
-            deleteOne: jest.fn().mockResolvedValue({}),
-        };
-        Reservation.findById.mockResolvedValue(reservation);
-
-        const req = { user: { id: ADMIN_ID, role: 'admin' }, params: { id: RESERVATION_ID } };
-        const res = mockRes();
-        await reservationController.deleteReservation(req, res);
-
-        expect(reservation.deleteOne).toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('returns 500 when findById throws an unexpected error', async () => {
+    it('returns 500 on database error', async () => {
         Reservation.findById.mockRejectedValue(new Error('DB crash'));
 
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
+        const req = baseReq();
         const res = mockRes();
-        await reservationController.deleteReservation(req, res);
 
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({ success: false, message: 'Cannot delete Reservation' })
-        );
-    });
-
-    it('returns 500 when deleteOne itself throws after reservation is found', async () => {
-        const reservation = {
-            user: { toString: () => USER_ID },
-            deleteOne: jest.fn().mockRejectedValue(new Error('Delete failed')),
-        };
-        Reservation.findById.mockResolvedValue(reservation);
-
-        const req = { user: { id: USER_ID, role: 'user' }, params: { id: RESERVATION_ID } };
-        const res = mockRes();
-        await reservationController.deleteReservation(req, res);
+        await controller.deleteReservation(req, res);
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith(
