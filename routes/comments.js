@@ -168,8 +168,8 @@ module.exports = router;
  *                  description: The comment was updated
  *                  content:
  *                      application/json:
- *                      schema:
- *                          $ref: '#/components/schemas/Comments'
+ *                          schema:
+ *                              $ref: '#/components/schemas/Comments'
  *              400:
  *                  description: Bad Request
  *              401:

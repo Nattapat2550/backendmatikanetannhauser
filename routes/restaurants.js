@@ -157,8 +157,8 @@ module.exports = router;
  *                  description: The restaurant was updated
  *                  content:
  *                      application/json:
- *                      schema:
- *                          $ref: '#/components/schemas/Restaurants'
+ *                          schema:
+ *                              $ref: '#/components/schemas/Restaurants'
  *              400:
  *                  description: Validation Error
  *              401:

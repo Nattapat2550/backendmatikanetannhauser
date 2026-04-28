@@ -167,8 +167,8 @@ module.exports = router;
  *                  description: The reservation was updated
  *                  content:
  *                      application/json:
- *                      schema:
- *                          $ref: '#/components/schemas/Reservations'
+ *                          schema:
+ *                              $ref: '#/components/schemas/Reservations'
  *              400:
  *                  description: Bad Request
  *              401:
