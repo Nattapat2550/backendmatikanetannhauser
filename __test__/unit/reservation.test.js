@@ -736,3 +736,129 @@ describe('deleteReservation', () => {
         );
     });
 });
+// ─────────────────────────────────────────────────────────────────────────────
+// addReservation – typeof string guard false-branches (lines 97-103)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A restaurant open around the clock (used by addReservation branch tests). */
+const OPEN_RESTAURANT = { openTime: '00:00', closeTime: '23:59' };
+
+const setupBaseMocks = () => {
+    Restaurant.findById.mockResolvedValue(OPEN_RESTAURANT);
+    Reservation.find.mockResolvedValue([]);
+    Reservation.create.mockResolvedValue({
+        _id: RESERVATION_ID,
+        populate: jest.fn().mockResolvedValue(undefined),
+    });
+};
+
+describe('addReservation – typeof string guard false-branches (lines 97-103)', () => {
+    afterEach(() => jest.clearAllMocks());
+
+    // FALSE branch of line 97: startDateTime is NOT a string
+    it('skips startDateTime normalisation when startDateTime is a number (false branch, line 97)', async () => {
+        Restaurant.findById.mockResolvedValue(OPEN_RESTAURANT);
+        const req = {
+            user:   { id: USER_ID, role: 'user' },
+            params: { restaurantId: RESTAURANT_ID },
+            body:   { startDateTime: 20250815100000, endDateTime: '2025-08-15T11:00:00.000Z' },
+        };
+        const res = mockRes();
+        await reservationController.addReservation(req, res);
+        // typeof check is false → block skipped → subsequent .slice() on number throws → 500
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({ success: false, message: 'Cannot create Reservation' })
+        );
+    });
+
+    it('skips startDateTime normalisation when startDateTime is null (false branch, line 97)', async () => {
+        Restaurant.findById.mockResolvedValue(OPEN_RESTAURANT);
+        const req = {
+            user:   { id: USER_ID, role: 'user' },
+            params: { restaurantId: RESTAURANT_ID },
+            body:   { startDateTime: null, endDateTime: '2025-08-15T11:00:00.000Z' },
+        };
+        const res = mockRes();
+        await reservationController.addReservation(req, res);
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({ success: false, message: 'Cannot create Reservation' })
+        );
+    });
+
+    // FALSE branch of line 103: endDateTime is NOT a string (startDateTime IS a valid string)
+    it('skips endDateTime normalisation when endDateTime is a number (false branch, line 103)', async () => {
+        Restaurant.findById.mockResolvedValue(OPEN_RESTAURANT);
+        const req = {
+            user:   { id: USER_ID, role: 'user' },
+            params: { restaurantId: RESTAURANT_ID },
+            body:   { startDateTime: '2025-08-15T10:00:00.000Z', endDateTime: 20250815110000 },
+        };
+        const res = mockRes();
+        await reservationController.addReservation(req, res);
+        // Line 97 true branch taken; line 103 false branch taken → .slice() on number throws → 500
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({ success: false, message: 'Cannot create Reservation' })
+        );
+    });
+
+    it('skips endDateTime normalisation when endDateTime is null (false branch, line 103)', async () => {
+        Restaurant.findById.mockResolvedValue(OPEN_RESTAURANT);
+        const req = {
+            user:   { id: USER_ID, role: 'user' },
+            params: { restaurantId: RESTAURANT_ID },
+            body:   { startDateTime: '2025-08-15T10:00:00.000Z', endDateTime: null },
+        };
+        const res = mockRes();
+        await reservationController.addReservation(req, res);
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({ success: false, message: 'Cannot create Reservation' })
+        );
+    });
+
+    // TRUE branch sanity checks — the replace() fires correctly
+    it('normalises startDateTime when it is a malformed string (true branch, line 97)', async () => {
+        setupBaseMocks();
+        const req = {
+            user:   { id: USER_ID, role: 'user' },
+            params: { restaurantId: RESTAURANT_ID },
+            body:   { startDateTime: '2025-08-15T10:00:00123Z', endDateTime: '2025-08-15T11:00:00.000Z' },
+        };
+        const res = mockRes();
+        await reservationController.addReservation(req, res);
+        expect(req.body.startDateTime).toBe('2025-08-15T10:00:00.123Z');
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('normalises endDateTime when it is a malformed string (true branch, line 103)', async () => {
+        setupBaseMocks();
+        const req = {
+            user:   { id: USER_ID, role: 'user' },
+            params: { restaurantId: RESTAURANT_ID },
+            body:   { startDateTime: '2025-08-15T10:00:00.000Z', endDateTime: '2025-08-15T11:00:00456Z' },
+        };
+        const res = mockRes();
+        await reservationController.addReservation(req, res);
+        expect(req.body.endDateTime).toBe('2025-08-15T11:00:00.456Z');
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('leaves correctly-formatted strings unchanged (true branch, replace no-ops)', async () => {
+        setupBaseMocks();
+        const goodStart = '2025-08-15T10:00:00.000Z';
+        const goodEnd   = '2025-08-15T11:00:00.000Z';
+        const req = {
+            user:   { id: USER_ID, role: 'user' },
+            params: { restaurantId: RESTAURANT_ID },
+            body:   { startDateTime: goodStart, endDateTime: goodEnd },
+        };
+        const res = mockRes();
+        await reservationController.addReservation(req, res);
+        expect(req.body.startDateTime).toBe(goodStart);
+        expect(req.body.endDateTime).toBe(goodEnd);
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+});

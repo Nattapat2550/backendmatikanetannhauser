@@ -112,6 +112,30 @@ describe('login', () => {
             expect.objectContaining({ success: false })
         );
     });
+
+    it('should set secure:true on the cookie when NODE_ENV is production', async () => {
+        const fakeUser = {
+            matchPassword: jest.fn().mockResolvedValue(true),
+            getSignedJwtToken: jest.fn().mockReturnValue('secure-token'),
+            id: 'user123',
+        };
+        User.findOne.mockReturnValue({ select: jest.fn().mockResolvedValue(fakeUser) });
+        process.env.JWT_COOKIE_EXPIRE = '30';
+        process.env.NODE_ENV = 'production';
+
+        const req = mockReq({ email: 'u@test.com', password: 'correct' });
+        const res = mockRes();
+
+        await authController.login(req, res);
+
+        expect(res.cookie).toHaveBeenCalledWith(
+            'token',
+            'secure-token',
+            expect.objectContaining({ secure: true })
+        );
+
+        delete process.env.NODE_ENV;
+    });
 });
 
 // ─── register ─────────────────────────────────────────────────────────────────
