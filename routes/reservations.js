@@ -162,7 +162,7 @@ module.exports = router;
  *                  application/json:
  *                      schema:
  *                          $ref: '#/components/schemas/Reservations'
- *          response:
+ *          responses:
  *              200:
  *                  description: The reservation was updated
  *                  content:
@@ -187,7 +187,7 @@ module.exports = router;
  *                  type: string
  *                required: true
  *                description: The reservation id
- *          response:
+ *          responses:
  *              200:
  *                  description: The reservation was deleted
  *              401:

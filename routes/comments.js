@@ -163,7 +163,7 @@ module.exports = router;
  *                  application/json:
  *                      schema:
  *                          $ref: '#/components/schemas/Comments'
- *          response:
+ *          responses:
  *              200:
  *                  description: The comment was updated
  *                  content:
@@ -188,7 +188,7 @@ module.exports = router;
  *                  type: string
  *                required: true
  *                description: The comment id
- *          response:
+ *          responses:
  *              200:
  *                  description: The comment was deleted
  *              401:
