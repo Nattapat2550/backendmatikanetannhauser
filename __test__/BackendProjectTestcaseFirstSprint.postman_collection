@@ -2329,7 +2329,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"email\": \"owner12@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
+                  "raw": "{\r\n    \"email\": \"owner1@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
                 },
                 "url": {
                   "raw": "{{URL}}/api/v1/auth/login",
@@ -4541,7 +4541,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"email\": \"owner13@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
+                  "raw": "{\r\n    \"email\": \"owner2@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
                 },
                 "url": {
                   "raw": "{{URL}}/api/v1/auth/login",
@@ -4786,7 +4786,7 @@
               "response": []
             },
             {
-              "name": "Login Restaurant User",
+              "name": "Login User",
               "event": [
                 {
                   "listen": "test",
@@ -4816,7 +4816,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"email\": \"user12@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
+                  "raw": "{\r\n    \"email\": \"bot1@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
                 },
                 "url": {
                   "raw": "{{URL}}/api/v1/auth/login",
@@ -5061,7 +5061,7 @@
               "response": []
             },
             {
-              "name": "Login Restaurant Admin",
+              "name": "Login Admin",
               "event": [
                 {
                   "listen": "test",
@@ -5091,7 +5091,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"email\": \"admin12@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
+                  "raw": "{\r\n    \"email\": \"admin@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
                 },
                 "url": {
                   "raw": "{{URL}}/api/v1/auth/login",
@@ -5363,6 +5363,28 @@
                     "packages": {},
                     "requests": {}
                   }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const comments = [\r",
+                      "  \"อาหารอร่อยมากครับ\",\r",
+                      "  \"บริการดี ประทับใจ\",\r",
+                      "  \"รอนานไปหน่อย แต่รสชาติดี\",\r",
+                      "  \"ไม่ค่อยโอเคเท่าไหร่\",\r",
+                      "  \"คุ้มค่ากับราคา\",\r",
+                      "  \"จะกลับมาอีกแน่นอน\"\r",
+                      "];\r",
+                      "\r",
+                      "const randomComment = comments[Math.floor(Math.random() * comments.length)];\r",
+                      "\r",
+                      "pm.environment.set(\"RANDOM_COMMENT\", randomComment);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
                 }
               ],
               "request": {
@@ -5377,7 +5399,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"email\": \"user12@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
+                  "raw": "{\r\n    \"email\": \"bot1@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
                 },
                 "url": {
                   "raw": "{{URL}}/api/v1/auth/login",
@@ -5407,1086 +5429,7 @@
                       "\r",
                       "pm.test(\"This user 's role is user\", function () {\r",
                       "    pm.expect(pm.response.json().data.role).to.equal(\"user\")\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Create Comment1 By User\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "{{URL}}/api/v1/auth/me",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "auth",
-                    "me"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Create Comment1 By User",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 201\", function () {",
-                      "    pm.response.to.have.status(201);",
-                      "});",
-                      "",
-                      "const res = pm.response.json();",
-                      "const new_comment_id = res?.data?._id;",
-                      "",
-                      "pm.environment.set(\"Comment_ID1\", new_comment_id);",
-                      "",
-                      "pm.test(\"Comment created\", () => {",
-                      "    pm.expect(res.data).to.have.property(\"text\");",
-                      "    pm.expect(res.data).to.have.property(\"rating\");",
-                      "});",
-                      "",
-                      "pm.execution.setNextRequest(\"Create Comment at Same restaurant\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"text\": \"{{$randomWords}}\",\r\n    \"rating\": 5\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID1_For_Comment}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Create Comment at Same restaurant",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 400 or 409 (duplicate comment)\", function () {\r",
-                      "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);\r",
-                      "});\r",
-                      "\r",
-                      "const res = pm.response.json();\r",
-                      "\r",
-                      "pm.test(\"Duplicate comment error message\", () => {\r",
-                      "    pm.expect(res).to.have.property(\"success\", false);\r",
-                      "    pm.expect(res).to.have.property(\"message\");\r",
-                      "});\r",
-                      "\r",
-                      "pm.test(\"No comment created\", () => {\r",
-                      "    pm.expect(res.data).to.be.undefined;\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Create Comment3 By User\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"text\": \"{{$randomWords}}\",\r\n    \"rating\": 5\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID1_For_Comment}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Create Comment3 By User",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 201\", function () {\r",
-                      "    pm.response.to.have.status(201);\r",
-                      "});\r",
-                      "\r",
-                      "const res = pm.response.json();\r",
-                      "const new_comment_id = res?.data?._id;\r",
-                      "\r",
-                      "pm.environment.set(\"Comment_ID2\", new_comment_id);\r",
-                      "\r",
-                      "pm.test(\"Comment created\", () => {\r",
-                      "    pm.expect(res.data).to.have.property(\"text\");\r",
-                      "    pm.expect(res.data).to.have.property(\"rating\");\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Get All Comments From restaurant1\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"text\": \"{{$randomWords}}\",\r\n    \"rating\": 5\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID2_For_Comment}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get All Comments From restaurant1",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Get All Comments From restaurant2\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID1_For_Comment}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get All Comments From restaurant2",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Get Single Comment\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID2_For_Comment}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get Single Comment",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Update Comment by User\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments",
-                    ":comment_id"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID1_For_Comment}}"
-                    },
-                    {
-                      "key": "comment_id",
-                      "value": "{{Comment_ID1}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Update Comment by User",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "const res = pm.response.json();\r",
-                      "\r",
-                      "pm.test(\"Comment is marked as edited\", () => {\r",
-                      "    pm.expect(res.data).to.have.property(\"isEdited\");\r",
-                      "    pm.expect(res.data.isEdited).to.be.true;\r",
-                      "});\r",
-                      "\r",
-                      "pm.test(\"Comment updated\", () => {\r",
-                      "    pm.expect(res.data).to.have.property(\"text\");\r",
-                      "    pm.expect(res.data).to.have.property(\"rating\");\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Delete Comment By User\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"test\": \"{{$randomWords}}\"\r\n}"
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments",
-                    ":comment_id"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID1_For_Comment}}"
-                    },
-                    {
-                      "key": "comment_id",
-                      "value": "{{Comment_ID1}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Comment By User",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.environment.set(\"Comment_ID1\", null);\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Logout User\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments",
-                    ":comment_id"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID1_For_Comment}}"
-                    },
-                    {
-                      "key": "comment_id",
-                      "value": "{{Comment_ID1}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Logout User",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.environment.set(\"TOKEN\", null);\r",
-                      "\r",
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Update Comment Without Login\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{URL}}/api/v1/auth/logout",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "auth",
-                    "logout"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Update Comment Without Login",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 401\", function () {\r",
-                      "    pm.response.to.have.status(401);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Delete Comment Without Login\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\"\r\n}"
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments",
-                    ":comment_id"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID2_For_Comment}}"
-                    },
-                    {
-                      "key": "comment_id",
-                      "value": "{{Comment_ID2}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Comment Without Login",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(401);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Login Other User\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"address\": \"Restaurant1\",\r\n    \"tel\": \"0622222222\",\r\n    \"openTime\": \"09:00\",\r\n    \"closeTime\": \"18:00\"\r\n}"
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments",
-                    ":comment_id"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID2_For_Comment}}"
-                    },
-                    {
-                      "key": "comment_id",
-                      "value": "{{Comment_ID2}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Login Other User",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.environment.set(\"TOKEN\", pm.response.json().token);\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Get Logged in with Other User Token\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"email\": \"filmmy1234@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/auth/login",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "auth",
-                    "login"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get Logged in with Other User Token",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.test(\"This user 's role is user\", function () {\r",
-                      "    pm.expect(pm.response.json().data.role).to.equal(\"user\")\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Update Comment By Other User\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "{{URL}}/api/v1/auth/me",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "auth",
-                    "me"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Update Comment By Other User",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 401\", function () {\r",
-                      "    pm.response.to.have.status(401);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Delete Comment By Other User\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\"\r\n}"
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments",
-                    ":comment_id"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID2_For_Comment}}"
-                    },
-                    {
-                      "key": "comment_id",
-                      "value": "{{Comment_ID2}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Comment By Other User",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(401);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Login Admin\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{TOKEN}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"address\": \"Restaurant1\",\r\n    \"tel\": \"0622222222\",\r\n    \"openTime\": \"09:00\",\r\n    \"closeTime\": \"18:00\"\r\n}"
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "restaurants",
-                    ":restaurant_id",
-                    "comments",
-                    ":comment_id"
-                  ],
-                  "variable": [
-                    {
-                      "key": "restaurant_id",
-                      "value": "{{Restaurant_ID2_For_Comment}}"
-                    },
-                    {
-                      "key": "comment_id",
-                      "value": "{{Comment_ID2}}"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Login Admin",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.environment.set(\"TOKEN\", pm.response.json().token);\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Get Logged in with Admin Token\");"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json",
-                    "description": "JSON Type",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"email\": \"admin12@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
-                },
-                "url": {
-                  "raw": "{{URL}}/api/v1/auth/login",
-                  "host": [
-                    "{{URL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "auth",
-                    "login"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get Logged in with Admin Token",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 200\", function () {\r",
-                      "    pm.response.to.have.status(200);\r",
-                      "});\r",
-                      "\r",
-                      "pm.test(\"This user 's role is user\", function () {\r",
-                      "    pm.expect(pm.response.json().data.role).to.equal(\"admin\")\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Create Comment without text\");"
+                      "});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -6549,9 +5492,7 @@
                       "\r",
                       "pm.test(\"No comment created\", () => {\r",
                       "    pm.expect(res.data).to.be.undefined;\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Create Comment without rating\");"
+                      "});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -6630,9 +5571,7 @@
                       "\r",
                       "pm.test(\"No comment created\", () => {\r",
                       "    pm.expect(res.data).to.be.undefined;\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Update Comment By Admin\");"
+                      "});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -6662,7 +5601,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"text\": \"{{$randomWords}}\"\r\n}",
+                  "raw": "{\r\n    \"text\": \"{{RANDOM_COMMENT}}\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6692,7 +5631,697 @@
               "response": []
             },
             {
-              "name": "Update Comment By Admin",
+              "name": "Create Comment Invalid rating",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400 (validation error)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "const res = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Validation failed\", () => {\r",
+                      "    pm.expect(res).to.have.property(\"success\", false);\r",
+                      "    pm.expect(res).to.have.property(\"message\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"No comment created\", () => {\r",
+                      "    pm.expect(res.data).to.be.undefined;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"text\": \"{{RANDOM_COMMENT}}\",\r\n    \"rating\": 0\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Comment Invalid rating2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400 (validation error)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "const res = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Validation failed\", () => {\r",
+                      "    pm.expect(res).to.have.property(\"success\", false);\r",
+                      "    pm.expect(res).to.have.property(\"message\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"No comment created\", () => {\r",
+                      "    pm.expect(res.data).to.be.undefined;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"text\": \"{{RANDOM_COMMENT}}\",\r\n    \"rating\": 6\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Comment text too long",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400 (validation error)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "const res = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Validation failed\", () => {\r",
+                      "    pm.expect(res).to.have.property(\"success\", false);\r",
+                      "    pm.expect(res).to.have.property(\"message\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"No comment created\", () => {\r",
+                      "    pm.expect(res.data).to.be.undefined;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"text\": \"012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\",\r\n  \"rating\": 5\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Comment text too long Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400 (validation error)\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "const res = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Validation failed\", () => {\r",
+                      "    pm.expect(res).to.have.property(\"success\", false);\r",
+                      "    pm.expect(res).to.have.property(\"message\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"No comment created\", () => {\r",
+                      "    pm.expect(res.data).to.be.undefined;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"text\": \"012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\",\r\n  \"rating\": 5\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Comment1 By User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "const res = pm.response.json();",
+                      "const new_comment_id = res?.data?._id;",
+                      "",
+                      "pm.environment.set(\"Comment_ID1\", new_comment_id);",
+                      "",
+                      "pm.test(\"Comment created\", () => {",
+                      "    pm.expect(res.data).to.have.property(\"text\");",
+                      "    pm.expect(res.data).to.have.property(\"rating\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"text\": \"{{RANDOM_COMMENT}}\",\r\n    \"rating\": 5\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Comment2 By User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "const res = pm.response.json();\r",
+                      "const new_comment_id = res?.data?._id;\r",
+                      "\r",
+                      "pm.environment.set(\"Comment_ID2\", new_comment_id);\r",
+                      "\r",
+                      "pm.test(\"Comment created\", () => {\r",
+                      "    pm.expect(res.data).to.have.property(\"text\");\r",
+                      "    pm.expect(res.data).to.have.property(\"rating\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"text\": \"{{RANDOM_COMMENT}}\",\r\n    \"rating\": 4\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Comment at Same restaurant",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400 or 409 (duplicate comment)\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);\r",
+                      "});\r",
+                      "\r",
+                      "const res = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Duplicate comment error message\", () => {\r",
+                      "    pm.expect(res).to.have.property(\"success\", false);\r",
+                      "    pm.expect(res).to.have.property(\"message\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"No comment created\", () => {\r",
+                      "    pm.expect(res.data).to.be.undefined;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"text\": \"{{RANDOM_COMMENT}}\",\r\n    \"rating\": 5\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Comments From restaurant1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "query": [
+                    {
+                      "key": "sort",
+                      "value": "-1",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Comments From restaurant2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Single Comment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID1}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Comment by User",
               "event": [
                 {
                   "listen": "test",
@@ -6702,7 +6331,17 @@
                       "    pm.response.to.have.status(200);\r",
                       "});\r",
                       "\r",
-                      "pm.execution.setNextRequest(\"Update Comment Rating Invalid\");"
+                      "const res = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Comment is marked as edited\", () => {\r",
+                      "    pm.expect(res.data).to.have.property(\"isEdited\");\r",
+                      "    pm.expect(res.data.isEdited).to.be.true;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Comment updated\", () => {\r",
+                      "    pm.expect(res.data).to.have.property(\"text\");\r",
+                      "    pm.expect(res.data).to.have.property(\"rating\");\r",
+                      "});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -6732,7 +6371,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\"\r\n}"
+                  "raw": "{\r\n    \"test\": \"{{$randomWords}}\"\r\n}"
                 },
                 "url": {
                   "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
@@ -6750,11 +6389,11 @@
                   "variable": [
                     {
                       "key": "restaurant_id",
-                      "value": "{{Restaurant_ID2_For_Comment}}"
+                      "value": "{{Restaurant_ID1_For_Comment}}"
                     },
                     {
                       "key": "comment_id",
-                      "value": "{{Comment_ID2}}"
+                      "value": "{{Comment_ID1}}"
                     }
                   ]
                 }
@@ -6770,9 +6409,7 @@
                     "exec": [
                       "pm.test(\"Status code is 400\", function () {\r",
                       "    pm.response.to.have.status(400);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Delete Comment2 By User\");"
+                      "});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -6832,6 +6469,142 @@
               "response": []
             },
             {
+              "name": "Update Comment Rating Invalid2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"rating\": 6\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Comment Rating Invalid3",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"rating\": \"abc\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
               "name": "Update Comment Text Invalid",
               "event": [
                 {
@@ -6852,9 +6625,7 @@
                     "exec": [
                       "pm.test(\"Status code is 400\", function () {\r",
                       "    pm.response.to.have.status(400);\r",
-                      "});\r",
-                      "\r",
-                      "pm.execution.setNextRequest(\"Delete Comment2 By User\");"
+                      "});"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -6914,7 +6685,674 @@
               "response": []
             },
             {
-              "name": "Delete Comment2 By User",
+              "name": "Delete Comment By User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.environment.set(\"Comment_ID1\", null);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID1_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID1}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Logout User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"TOKEN\", null);\r",
+                      "\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{URL}}/api/v1/auth/logout",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Comment Without Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Comment Without Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"address\": \"Restaurant1\",\r\n    \"tel\": \"0622222222\",\r\n    \"openTime\": \"09:00\",\r\n    \"closeTime\": \"18:00\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login User2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.environment.set(\"TOKEN\", pm.response.json().token);\r",
+                      "\r",
+                      "pm.execution.setNextRequest(\"Get Logged in with Other User Token\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"bot2@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/auth/login",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Logged in with Other User Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"This user 's role is user\", function () {\r",
+                      "    pm.expect(pm.response.json().data.role).to.equal(\"user\")\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{URL}}/api/v1/auth/me",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Comment By User2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Comment By User2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"address\": \"Restaurant1\",\r\n    \"tel\": \"0622222222\",\r\n    \"openTime\": \"09:00\",\r\n    \"closeTime\": \"18:00\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.environment.set(\"TOKEN\", pm.response.json().token);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"admin@gmail.com\",\r\n    \"password\": \"123456\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/auth/login",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Logged in with Admin Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"This user 's role is user\", function () {\r",
+                      "    pm.expect(pm.response.json().data.role).to.equal(\"admin\")\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{URL}}/api/v1/auth/me",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Comment By Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "description": "JSON Type",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"text\": \"{{RANDOM_COMMENT}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{URL}}/api/v1/restaurants/:restaurant_id/comments/:comment_id",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "restaurants",
+                    ":restaurant_id",
+                    "comments",
+                    ":comment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "restaurant_id",
+                      "value": "{{Restaurant_ID2_For_Comment}}"
+                    },
+                    {
+                      "key": "comment_id",
+                      "value": "{{Comment_ID2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Comment By Admin",
               "event": [
                 {
                   "listen": "test",
@@ -6981,6 +7419,53 @@
                       "key": "comment_id",
                       "value": "{{Comment_ID2}}"
                     }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Logout Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"TOKEN\", null);\r",
+                      "\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{TOKEN}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{URL}}/api/v1/auth/logout",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "logout"
                   ]
                 }
               },

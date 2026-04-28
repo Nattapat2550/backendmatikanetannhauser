@@ -86,7 +86,7 @@ exports.getRestaurants = async (req,res,next)=>{
 };
 
 //Get sigle Restaurant
-exports.getRestaurant= async (req,res,next)=>{
+exports.getRestaurant = async (req,res,next)=>{
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) { //if restaurant is not valid na
             return res.status(400).json({success:false, message:'Invalid restaurant ID'});
@@ -118,7 +118,17 @@ exports.getRestaurant= async (req,res,next)=>{
 //Create new Restaurant 
 exports.createRestaurant = async(req,res,next)=>{
     try {
-        req.body.user = req.user.id;
+        
+        // const existingRestaurant = await Restaurant.findOne({ telephone: req.body.telephone });
+        // if(existingRestaurant){
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "This telephone number is already existed",
+        //     });
+        // }
+
+        req.body.owner = req.user.id; // แก้จาก user เป็น owner
+        req.body.user = req.user.id; // แก้จาก user เป็น owner
         const restaurant = await Restaurant.create(req.body);
         
         res.status (201).json({
@@ -126,14 +136,7 @@ exports.createRestaurant = async(req,res,next)=>{
             data: restaurant
         });
         
-        const existingRestaurant = await Restaurant.findOne({ telephone: req.body.telephone });
-        if(existingRestaurant){
-            return res.status(400).json({
-                success: false,
-                message: "This telephone number is already existed",
-            });
-        }
-    } catch(err) {
+    } catch (err) {
         if (err.name === 'ValidationError') { //lost info
             const errors = Object.values(err.errors).map(e => e.message);
 
@@ -164,7 +167,6 @@ exports.updateRestaurant= async (req, res,next)=> {
             return res.status (404).json({success:false});
         }
 
-        // ตรวจสอบว่าผู้ใช้งานเป็นเจ้าของร้านนี้ หรือเป็น admin หรือไม่
         if(restaurant.user.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({
                 success: false, 

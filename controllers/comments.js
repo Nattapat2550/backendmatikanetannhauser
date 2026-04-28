@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const Comment = require('../models/Comment');
 const Restaurant = require('../models/Restaurant');
 
@@ -24,29 +26,20 @@ let WINDOW_MS_STRING = formatWindowDuration(WINDOW_MS);
 // @route   GET /api/v1/restaurants/:restaurantId/comments
 exports.getComments = async (req, res, next) => {
     try {
-        let query;
-        const reqQuery = { ...req.query };
+        const { select, sort, ...rest } = req.query;
 
-        const removeFields = ['select', 'sort', 'page', 'limit'];
-        removeFields.forEach(param => delete reqQuery[param]);
+        // Build query
+        let query = Comment.find(rest)
+            .populate({ path: 'restaurant' })
+            .populate({ path: 'user', select: 'name' });
 
-        if (req.params.restaurantId) {
-            reqQuery.restaurant = req.params.restaurantId;
+        // Field selection
+        if (select) {
+            query = query.select(select.split(',').join(' '));
         }
 
-        
-        query = Comment.find(reqQuery).populate({
-            path: 'user',
-            select: 'name'
-        });
-
-        
-        if (req.query.sort) {
-            const sortBy = req.query.sort.split(',').join(' ');
-            query = query.sort(sortBy);
-        } else {
-            query = query.sort('-createdAt'); // Default เป็น Most Recent
-        }
+        // Sorting
+        query = query.sort(sort ? sort.split(',').join(' ') : '-createdAt');
 
         const comments = await query;
 
@@ -65,10 +58,9 @@ exports.getComments = async (req, res, next) => {
 // @route   GET /api/v1/comments/:id
 exports.getComment = async (req, res, next) => {
     try {
-        const comment = await Comment.findById(req.params.id).populate({
-            path: 'user',
-            select: 'name'
-        });
+        const comment = await Comment.findById(req.params.id)
+            .populate({ path: 'restaurant' })
+            .populate({ path: 'user', select: 'name' });
 
         if (!comment) {
             return res.status(404).json({ success: false, message: `No comment with id ${req.params.id}` });
@@ -116,9 +108,13 @@ exports.addComment = async (req, res, next) => {
                 message: "You have already reviewed this restaurant"
             });
         }
-        const comment = await Comment.create(req.body);
 
+        const newComment = new Comment(req.body);
+        await newComment.validate();
+
+        const comment = await newComment.save();
         res.status(201).json({ success: true, data: comment });
+
     } catch (err) {
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
@@ -134,24 +130,31 @@ exports.addComment = async (req, res, next) => {
 exports.updateComment = async (req, res, next) => {
     try {
         let comment = await Comment.findById(req.params.id);
-
+ 
         if (!comment) {
             return res.status(404).json({ success: false, message: `No comment with id ${req.params.id}` });
         }
-
-        if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
+ 
+        if (comment.user.toString() !== req.user.id.toString() && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to update this comment` });
         }
-
+ 
         req.body.isEdited = true;
-
+        req.body.updatedAt = new Date();
+        
         comment = await Comment.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
-
+ 
         res.status(200).json({ success: true, data: comment });
     } catch (err) {
+        if (err instanceof mongoose.Error.CastError) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid value for field '${err.path}': ${err.value}`
+            });
+        }
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
             return res.status(400).json({ success: false, message: messages });
@@ -172,7 +175,7 @@ exports.deleteComment = async (req, res, next) => {
         }
 
         if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to delete this comment` });
+            return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to delete this comment` });
         }
 
         await comment.deleteOne();
