@@ -6,9 +6,9 @@ jest.mock('../../models/Restaurant');
 jest.mock('../../models/Reservation.js');
 jest.mock('../../models/Comment.js');
 
-const Restaurant = require('../../models/Restaurant');
+const Restaurant = require('../../models/Restaurant.js');
 const Reservation = require('../../models/Reservation.js');
-const controller = require('../../controllers/restaurants'); // adjust path as needed
+const controller = require('../../controllers/restaurants.js'); // adjust path as needed
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
