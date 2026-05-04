@@ -81,6 +81,8 @@ module.exports = router;
  *      post:
  *          summary: Create a new comment
  *          tags: [Comments]
+ *          security:
+ *              - bearerAuth: []
  *          parameters:
  *            - in: path
  *              name: restaurantId
@@ -150,6 +152,8 @@ module.exports = router;
  *      put:
  *          summary: Update the comment by the id
  *          tags: [Comments]
+ *          security:
+ *              - bearerAuth: []
  *          parameters:
  *              - in: path
  *                name: id
@@ -163,13 +167,13 @@ module.exports = router;
  *                  application/json:
  *                      schema:
  *                          $ref: '#/components/schemas/Comments'
- *          response:
+ *          responses:
  *              200:
  *                  description: The comment was updated
  *                  content:
  *                      application/json:
- *                      schema:
- *                          $ref: '#/components/schemas/Comments'
+ *                          schema:
+ *                              $ref: '#/components/schemas/Comments'
  *              400:
  *                  description: Bad Request
  *              401:
@@ -181,6 +185,8 @@ module.exports = router;
  *      delete:
  *          summary: Remove the comment by the id
  *          tags: [Comments]
+ *          security:
+ *              - bearerAuth: []
  *          parameters:
  *              - in: path
  *                name: id
@@ -188,7 +194,7 @@ module.exports = router;
  *                  type: string
  *                required: true
  *                description: The comment id
- *          response:
+ *          responses:
  *              200:
  *                  description: The comment was deleted
  *              401:

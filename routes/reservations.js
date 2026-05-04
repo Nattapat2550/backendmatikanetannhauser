@@ -78,6 +78,8 @@ module.exports = router;
  *      post:
  *          summary: Create a new reservation
  *          tags: [Reservations]
+ *          security:
+ *              - bearerAuth: []
  *          parameters:
  *            - in: path
  *              name: restaurantId
@@ -149,6 +151,8 @@ module.exports = router;
  *      put:
  *          summary: Update the reservation by the id
  *          tags: [Reservations]
+ *          security:
+ *              - bearerAuth: []
  *          parameters:
  *              - in: path
  *                name: id
@@ -162,13 +166,13 @@ module.exports = router;
  *                  application/json:
  *                      schema:
  *                          $ref: '#/components/schemas/Reservations'
- *          response:
+ *          responses:
  *              200:
  *                  description: The reservation was updated
  *                  content:
  *                      application/json:
- *                      schema:
- *                          $ref: '#/components/schemas/Reservations'
+ *                          schema:
+ *                              $ref: '#/components/schemas/Reservations'
  *              400:
  *                  description: Bad Request
  *              401:
@@ -180,6 +184,8 @@ module.exports = router;
  *      delete:
  *          summary: Remove the reservation by the id
  *          tags: [Reservations]
+ *          security:
+ *              - bearerAuth: []
  *          parameters:
  *              - in: path
  *                name: id
@@ -187,7 +193,7 @@ module.exports = router;
  *                  type: string
  *                required: true
  *                description: The reservation id
- *          response:
+ *          responses:
  *              200:
  *                  description: The reservation was deleted
  *              401:

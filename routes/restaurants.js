@@ -90,6 +90,8 @@ module.exports = router;
  *      post:
  *          summary: Create a new restaurant
  *          tags: [Restaurants]
+ *          security:
+ *              - bearerAuth: []
  *          requestBody:
  *              required: true
  *              content:
@@ -139,6 +141,8 @@ module.exports = router;
  *      put:
  *          summary: Update the restaurant by the id
  *          tags: [Restaurants]
+ *          security:
+ *              - bearerAuth: []
  *          parameters:
  *              - in: path
  *                name: id
@@ -152,13 +156,13 @@ module.exports = router;
  *                  application/json:
  *                      schema:
  *                          $ref: '#/components/schemas/Restaurants'
- *          response:
+ *          responses:
  *              200:
  *                  description: The restaurant was updated
  *                  content:
  *                      application/json:
- *                      schema:
- *                          $ref: '#/components/schemas/Restaurants'
+ *                         schema:
+ *                             $ref: '#/components/schemas/Restaurants'
  *              400:
  *                  description: Validation Error
  *              401:
@@ -170,6 +174,8 @@ module.exports = router;
  *      delete:
  *          summary: Remove the restaurant by the id
  *          tags: [Restaurants]
+ *          security:
+ *              - bearerAuth: []
  *          parameters:
  *              - in: path
  *                name: id
@@ -177,7 +183,7 @@ module.exports = router;
  *                  type: string
  *                required: true
  *                description: The restaurant id
- *          response:
+ *          responses:
  *              200:
  *                  description: The restaurant was deleted
  *              400:

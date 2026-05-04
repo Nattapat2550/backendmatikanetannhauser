@@ -5,7 +5,9 @@ setServers(["1.1.1.1", "8.8.8.8"]);
 const express = require('express');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+// const mongoSanitize = require('@exortek/express-mongo-sanitize');
 const helmet = require('helmet');
+// const { xss } = require('express-xss-sanitizer');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
@@ -29,24 +31,15 @@ app.options(/.*/, cors());
 
 app.use(express.json());
 app.use(cookieParser());
-
-// ตั้งค่า Helmet ใหม่ให้ยอมรับ Script/CSS จาก CDN สำหรับ Swagger
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-        imgSrc: ["'self'", "data:", "https://validator.swagger.io"],
-        connectSrc: ["'self'", "http://localhost:3000", "https://backendmatikanetannhauser.vercel.app"],
-      },
-    },
-    // ปิดการบล็อก Cross-Origin บางประเภทเพื่อให้โหลดหน้า UI ได้
-    crossOriginEmbedderPolicy: false, 
-  })
-);
-
+// app.use(mongoSanitize());
+app.use(helmet());
+// app.use(xss());
+// Rate Limit
+/*const limiter = rateLimit({
+    windowMs: 10*60*1000,
+    max: 100,
+});
+app.use(limiter);*/
 app.set('query parser','extended');
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
@@ -54,7 +47,6 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 app.get('/', (req, res) => {
     res.status(200).json({ success: true, message: "Welcome to Restaurant Reservation Backend API" });
 });
-
 app.use('/api/v1/restaurants', restaurants);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/reservations', reservations);
@@ -63,24 +55,17 @@ app.use('/api/v1/comments', comments);
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
 
-const PORT = process.env.PORT || 3000;
-
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
         info: {
-            title: 'Restaurant API Documentation',
+            title: 'Library API',
             version: '1.0.0',
             description: 'A Restaurant Reservation API',
         },
         servers: [
             {
-                url: 'https://backendmatikanetannhauser.vercel.app/api/v1',
-                description: 'Production Server'
-            },
-            {
-                url: `http://localhost:${PORT}/api/v1`, 
-                description: 'Local Server'
+                url: 'http://localhost:3000/api/v1',
             }
         ],
     },
@@ -88,33 +73,11 @@ const swaggerOptions = {
 };
 
 const swaggerDoc = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
 
-// ---------------------------------------------------------
-// การตั้งค่า Disable Swagger 
-// ---------------------------------------------------------
+const PORT = process.env.PORT || 3000;
 
-// โค้ดชุดนี้จะทำให้ Swagger เปิดใช้งานเฉพาะตอนที่ "ไม่ใช่ Production" (เช่น เปิดบน Local)
-// และจะ "ปิดการใช้งาน" ทันทีที่นำขึ้น Vercel หรือ Server ที่เป็น production
-if (process.env.NODE_ENV !== 'production') {
-    
-    // บังคับให้โหลดไฟล์ CSS/JS จาก CDN เท่านั้น เพื่อป้องกันปัญหา Vercel หาไฟล์ local ไม่เจอ (MIME Error)
-    const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css";
-    const JS_URL = [
-        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js"
-    ];
-
-    app.use('/api-docs',
-        swaggerUI.serve,
-        swaggerUI.setup(swaggerDoc, {
-            customCssUrl: CSS_URL,
-            customJs: JS_URL,
-            customSiteTitle: "Restaurant API Documentation"
-        })
-    );
-}
-
-const server = app.listen(PORT, console.log('Server running in', process.env.NODE_ENV, 'mode on port', PORT));
+const server = app.listen(PORT, console.log('Server running in ', process.env.NODE_ENV, ' mode on port', PORT));
 
 process.on('unhandledRejection', (err, promise) => {
     console.log(`Error: ${err.message}`);
